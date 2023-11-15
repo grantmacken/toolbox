@@ -66,18 +66,18 @@ inspect:
 alpine_toolbox:  ## buildah build alpine
 	CONTAINER=$$(buildah from quay.io/toolbx-images/alpine-toolbox:3.18)
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
+build-base \
 clipboard \
-libgcc \
-libstdc++ \
 ncurses-libs \
 tzdata \
+github-cli \
 wl-clipboard'
-	buildah  copy --from localhost/base:$(ALPINE_VER)  '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah  copy --from localhost/base:$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
 	buildah  copy --from localhost/base:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
 	buildah  copy --from localhost/base:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
-	buildah run $${CONTAINER} /bin/sh -c 'ls -l /usr/local/bin'
-	buildah run $${CONTAINER} /bin/sh -c 'ln -vfs /bin/sh /usr/bin/sh'
-	# buildah inspect $${CONTAINER}
+	buildah run $${CONTAINER} /bin/sh -c 'ls -l /usr/local/bin' || true
+	buildah run $${CONTAINER} /bin/sh -c 'ln -vfs /bin/sh /usr/bin/sh' || true
+	buildah inspect $${CONTAINER}
 	buildah commit --rm $${CONTAINER} tbx:$(VERSION)
 	# toolbox create --image localhost/tbx:$${VERSION} --container tbx
 	# toolbox enter tbx

@@ -61,16 +61,14 @@ rust:
 
 .PHONY: golang
 golang:
-	echo 'Building golang tooling'
+	echo 'Building $(@) tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
-	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh - -- -y"
-	buildah run $${CONTAINER} bin/sh -c "which rustup" || true
-	buildah run $${CONTAINER} bin/sh -c "which cargo" || true
-	buildah run $${CONTAINER} bin/sh -c "ls ~/.cargo" || true
-	buildah commit --rm $${CONTAINER} rust:$(ALPINE_VER)
-
-
+	buildah run $${CONTAINER} bin/sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz'
+	buildah run $${CONTAINER} bin/sh -c 'tar -C ~/.local -xzf $(GO_VERS).linux-amd64.tar.gz'
+	buildah commit --rm $${CONTAINER} $(@):$(ALPINE_VER)
+	# sudo rm -rf $(HOME)/.local/go
+		# tar -C $(HOME)/.local -xzf $(VERSION).linux-amd64.tar.gz
 
 .PHONY: neovim
 neovim:

@@ -17,12 +17,5 @@ jobs:
         run: |
           make version
           make neovim
-          # make build-w3m
-          # make build-curl
-          # make build-cmark
-          # make certs
-          # make build-openresty
-          # echo '----------------'
-          # cat .env
-          # echo '----------------'
-          # podman images
+          make inspect
+          podman images

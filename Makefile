@@ -27,9 +27,11 @@ version:
 	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
 	echo " - alpine version: $$VERSION"
 	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
+	echo '-----------------------------------------------'
 
 .PHONY: neovim
 neovim:
+	echo 'Building nevim'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
@@ -47,16 +49,19 @@ git'
 	# podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'
 	# nvim --version
 
-.PHONY: run
-run:
-	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
-	podman run localhost/base:$${VERSION} bin/sh -c 'which nvim'
-	podman run localhost/base:$${VERSION} bin/sh -c 'ls -l /usr/local/share'
-	podman run localhost/base:$${VERSION} bin/sh -c 'ls -l /usr/local/bin'
+	
+
+.PHONY: inspect
+inspect:
+	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'
 	echo
-	podman run localhost/base:$${VERSION} bin/sh -c 'ls -l /usr/local/lib/nvim'
+	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/share'
 	echo
-	podman run localhost/base:$${VERSION} bin/sh -c 'ldd /usr/local/bin/nvim'
+	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/bin'
+	echo
+	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/lib/nvim'
+	echo
+	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/nvim'
 
 
 .PHONY: alpine_toolbox

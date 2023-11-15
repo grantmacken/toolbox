@@ -44,6 +44,15 @@ gettext-tiny-dev \
 git' &>/dev/null
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
+ 
+.PHONY: rust
+rust:
+	echo 'Building rust tooling'
+	echo " - from alpine version: $(ALPINE_VER)"
+	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
+	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+	buildah commit --rm $${CONTAINER} rust:$(ALPINE_VER)
+
 
 
 .PHONY: neovim

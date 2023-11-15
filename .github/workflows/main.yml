@@ -17,6 +17,7 @@ jobs:
         run: |
           make version
           make base
+          make rust
           # make inspect
           # make alpine_toolbox
           podman images

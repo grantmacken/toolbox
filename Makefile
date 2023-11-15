@@ -9,8 +9,6 @@ MAKEFLAGS += --silent
 
 include .env
 
-
-
 default: neovim
 
 #cosign \
@@ -31,8 +29,9 @@ version:
 	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
 
 .PHONY: neovim
-neovim: version
-	CONTAINER=$$(buildah from docker.io/alpine:$${VERSION})
+neovim:
+	echo " - from alpine version: $(ALPINE_VER)"
+	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 build-base \
 cmake \
@@ -45,9 +44,9 @@ git' \
 && cd neovim \
 && make CMAKE_BUILD_TYPE=RelWithDebInfo \
 && make install
-	buildah commit --rm $${CONTAINER} base:$${VERSION}
-	podman run localhost/base:$${VERSION} bin/sh -c 'which nvim'
-	nvim --version
+	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
+	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'
+	# nvim --version
 
 .PHONY: run
 run:
@@ -61,9 +60,8 @@ run:
 	podman run localhost/base:$${VERSION} bin/sh -c 'ldd /usr/local/bin/nvim'
 
 
-.PHONY: default
-default:  clean  ## buildah build alpine
-	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
+.PHONY: alpine_toolbox
+alpine_toolbox:  ## buildah build alpine
 	CONTAINER=$$(buildah from quay.io/toolbx-images/alpine-toolbox:3.18)
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 clipboard \
@@ -76,11 +74,11 @@ wl-clipboard'
 	buildah  copy --from localhost/base:$${VERSION}  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
 	buildah  copy --from localhost/base:$${VERSION}  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
 	buildah run $${CONTAINER} /bin/sh -c 'ls -l /usr/local/bin'
-	# buildah run $${CONTAINER} /bin/sh -c 'ln -vfs /bin/sh /usr/bin/sh'
-	# buildah inspect $${CONTAINER}
+	buildah run $${CONTAINER} /bin/sh -c 'ln -vfs /bin/sh /usr/bin/sh'
+	buildah inspect $${CONTAINER}
 	buildah commit --rm $${CONTAINER} tbx:$${VERSION}
-	toolbox create --image localhost/tbx:$${VERSION} --container tbx
-	toolbox enter tbx
+	# toolbox create --image localhost/tbx:$${VERSION} --container tbx
+	# toolbox enter tbx
 
 .PHONY: clean
 clean:

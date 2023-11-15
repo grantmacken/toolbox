@@ -68,8 +68,14 @@ alpine_toolbox:  ## buildah build alpine
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 build-base \
 clipboard \
+chezmoi \
+cosign \
 ncurses-libs \
+python3 \
+gzip \
 tzdata \
+grep \
+ripgrep \
 github-cli \
 wl-clipboard'
 	buildah  copy --from localhost/base:$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
@@ -77,8 +83,8 @@ wl-clipboard'
 	buildah  copy --from localhost/base:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
 	buildah run $${CONTAINER} /bin/sh -c 'ls -l /usr/local/bin' || true
 	buildah run $${CONTAINER} /bin/sh -c 'ln -vfs /bin/sh /usr/bin/sh' || true
-	buildah inspect $${CONTAINER}
-	buildah commit --rm $${CONTAINER} tbx:$(VERSION)
+	# buildah inspect $${CONTAINER}
+	buildah commit --rm $${CONTAINER} tbx:$(ALPINE_VER)
 	# toolbox create --image localhost/tbx:$${VERSION} --container tbx
 	# toolbox enter tbx
 

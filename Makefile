@@ -52,8 +52,8 @@ rust:
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	buildah run $${CONTAINER} bin/sh -c "source $(HOME)/.cargo/env" || true
-	buildah run $${CONTAINER} bin/sh -c "ls -a $(HOME)" || true
+	buildah run $${CONTAINER} bin/sh -c "source ~/.cargo/env" || true
+	buildah run $${CONTAINER} bin/sh -c "ls -a ~/" || true
 	buildah run $${CONTAINER} bin/sh -c "which cargo" || true
 	buildah run $${CONTAINER} bin/sh -c "rustup component add rustfmt clippy" || true
 	buildah run $${CONTAINER} bin/sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing

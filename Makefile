@@ -35,7 +35,6 @@ git' &>/dev/null
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
  
-.PHONY: rust
 rust:
 	echo 'Building rust tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
@@ -49,14 +48,13 @@ rust:
 	buildah run $${CONTAINER} bin/sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing
 	buildah commit --rm $${CONTAINER} rust:$(ALPINE_VER)
 
-.PHONY: golang
 golang:
-	echo 'Building $(@) tooling'
+	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} bin/sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz'
-	buildah run $${CONTAINER} bin/sh -c 'tar -C ~/.local -xzf $(GO_VERS).linux-amd64.tar.gz'
-	buildah commit --rm $${CONTAINER} $(@):$(ALPINE_VER)
+	buildah run $${CONTAINER} bin/sh -c 'tar -C ~/.local -xzf $(GO_VER).linux-amd64.tar.gz'
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	# sudo rm -rf $(HOME)/.local/go
 		# tar -C $(HOME)/.local -xzf $(VERSION).linux-amd64.tar.gz
 

@@ -50,7 +50,10 @@ rust:
 	echo 'Building rust tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
-	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh - -- -y"
+	buildah run $${CONTAINER} bin/sh -c "which rustup" || true
+	buildah run $${CONTAINER} bin/sh -c "which cargo" || true
+	buildah run $${CONTAINER} bin/sh -c "ls ~/.cargo" || true
 	buildah commit --rm $${CONTAINER} rust:$(ALPINE_VER)
 
 

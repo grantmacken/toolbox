@@ -39,9 +39,9 @@ coreutils \
 curl \
 unzip \
 gettext-tiny-dev \
-git' 
+git'
 	buildah run $${CONTAINER} bin/sh -c 'git clone https://github.com/neovim/neovim \
-&& cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install'
+&& cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 	podman images
 	# podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'

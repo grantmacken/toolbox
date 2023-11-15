@@ -29,6 +29,23 @@ version:
 	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
 	echo '-----------------------------------------------'
 
+.PHONY: base
+base:
+	echo 'Building base'
+	echo " - from alpine version: $(ALPINE_VER)"
+	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
+build-base \
+cmake \
+coreutils \
+curl \
+unzip \
+gettext-tiny-dev \
+git' &>/dev/null
+	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
+
+
+
 .PHONY: neovim
 neovim:
 	echo 'Building nevim'
@@ -60,6 +77,12 @@ inspect:
 	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/lib/nvim'
 	echo
 	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/nvim'
+
+
+.PHONY: alpine_rust
+alpine_rust:  ## buildah build alpine
+	CONTAINER=$$(buildah from quay.io/toolbx-images/alpine-toolbox:3.18)
+	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 
 
 .PHONY: alpine_toolbox

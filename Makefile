@@ -5,12 +5,13 @@ SHELL := /bin/bash
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --silent
-
-
 # https://github.com/toolbx-images/images/blob/main/alpine/edge/extra-packages
 
-FROM := quay.io/toolbx-images/alpine-toolbox
-NAME := ghcr.io/grantmacken/tools
+include .env
+
+
+
+default: neovim
 
 #cosign \
 #github-cli \
@@ -29,8 +30,8 @@ version:
 	echo " - alpine version: $$VERSION"
 	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
 
-
-xxx:
+.PHONY: neovim
+neovim: version
 	CONTAINER=$$(buildah from docker.io/alpine:$${VERSION})
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 build-base \
@@ -39,7 +40,7 @@ coreutils \
 curl \
 unzip \
 gettext-tiny-dev \
-git \
+git' \
 && git clone https://github.com/neovim/neovim \
 && cd neovim \
 && make CMAKE_BUILD_TYPE=RelWithDebInfo \

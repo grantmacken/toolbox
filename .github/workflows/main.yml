@@ -15,7 +15,8 @@ jobs:
       #     password: ${{ secrets.GITHUB_TOKEN }}
       - name: build images
         run: |
-          make
+          make version
+          make neovim
           # make build-w3m
           # make build-curl
           # make build-cmark

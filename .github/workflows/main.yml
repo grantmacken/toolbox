@@ -1,0 +1,27 @@
+name: toolbox_builds
+on: push
+# on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      - name: build images
+        run: |
+          make version
+          # make build-w3m
+          # make build-curl
+          # make build-cmark
+          # make certs
+          # make build-openresty
+          # echo '----------------'
+          # cat .env
+          # echo '----------------'
+          # podman images

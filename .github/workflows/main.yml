@@ -16,7 +16,7 @@ jobs:
       - name: build images
         run: |
           make version
-          make neovim
-          make inspect
-          make alpine_toolbox
+          make base
+          # make inspect
+          # make alpine_toolbox
           podman images

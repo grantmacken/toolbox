@@ -47,6 +47,7 @@ git' \
 && make install
 	buildah commit --rm $${CONTAINER} base:$${VERSION}
 	podman run localhost/base:$${VERSION} bin/sh -c 'which nvim'
+	nvim --version
 
 .PHONY: run
 run:

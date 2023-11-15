@@ -49,8 +49,6 @@ git'
 	# podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'
 	# nvim --version
 
-	
-
 .PHONY: inspect
 inspect:
 	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'
@@ -74,13 +72,13 @@ libstdc++ \
 ncurses-libs \
 tzdata \
 wl-clipboard'
-	buildah  copy --from localhost/base:$${VERSION}  $${CONTAINER}  '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah  copy --from localhost/base:$${VERSION}  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
-	buildah  copy --from localhost/base:$${VERSION}  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
+	buildah  copy --from localhost/base:$(ALPINE_VER)  '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah  copy --from localhost/base:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
+	buildah  copy --from localhost/base:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
 	buildah run $${CONTAINER} /bin/sh -c 'ls -l /usr/local/bin'
 	buildah run $${CONTAINER} /bin/sh -c 'ln -vfs /bin/sh /usr/bin/sh'
-	buildah inspect $${CONTAINER}
-	buildah commit --rm $${CONTAINER} tbx:$${VERSION}
+	# buildah inspect $${CONTAINER}
+	buildah commit --rm $${CONTAINER} tbx:$(VERSION)
 	# toolbox create --image localhost/tbx:$${VERSION} --container tbx
 	# toolbox enter tbx
 

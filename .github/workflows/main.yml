@@ -18,4 +18,5 @@ jobs:
           make version
           make neovim
           make inspect
+          make alpine_toolbox
           podman images

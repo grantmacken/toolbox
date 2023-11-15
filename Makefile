@@ -11,17 +11,6 @@ include .env
 
 default: neovim
 
-#cosign \
-#github-cli \
-# libstdc++ \
-# ncurses-libs \
-# neovim \
-# openssl \
-# ripgrep \
-# tzdata \
-# tzdata \
-# wl-clipboard \
-
 .PHONY: version
 version:
 	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
@@ -41,6 +30,7 @@ coreutils \
 curl \
 unzip \
 gettext-tiny-dev \
+tree \
 git' &>/dev/null
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
@@ -53,7 +43,7 @@ rust:
 	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} bin/sh -c "source ~/.cargo/env" || true
-	buildah run $${CONTAINER} bin/sh -c "ls -a ~/" || true
+	buildah run $${CONTAINER} bin/sh -c "ls -al ~/" || true
 	buildah run $${CONTAINER} bin/sh -c "which cargo" || true
 	buildah run $${CONTAINER} bin/sh -c "rustup component add rustfmt clippy" || true
 	buildah run $${CONTAINER} bin/sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing

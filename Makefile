@@ -33,7 +33,7 @@ gettext-tiny-dev \
 tree \
 git' &>/dev/null
 	buildah config --author='Grant Mackenzie' --workingdir='/home' $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'pwd'
+	buildah run $${CONTAINER} sh -c 'tree /usr/local'
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
 rustup:
@@ -54,9 +54,11 @@ golang:
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
-&& tar -C /usr/local --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz'
+&& tar -C /usr/local --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
+&& mkdir -p /usr/local/bin && cd /usr/local/bin \
+&& ln -s /usr/local/go/bin/go'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	podman run $@:$(ALPINE_VER) sh -c 'tree'
+	podman run $@:$(ALPINE_VER) sh -c 'tree /usr/local'
 	# sudo rm -rf $(HOME)/.local/go
 		# tar -C $(HOME)/.local -xzf $(VERSION).linux-amd64.tar.gz
 

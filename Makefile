@@ -21,8 +21,9 @@ version:
 .PHONY: base
 base:
 	echo 'Building base'
-	echo " - from alpine version: $(ALPINE_VER)"
+	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 build-base \
 cmake \

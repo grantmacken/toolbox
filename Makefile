@@ -34,30 +34,30 @@ tree \
 git' &>/dev/null
 	buildah config --author='Grant Mackenzie' --workingdir='/home' $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'pwd'
-	buildah run $${CONTAINER} sh -c 'tree'
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
- 
 rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
-	buildah run $${CONTAINER} /bin/ash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	buildah run $${CONTAINER} /bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	buildah run $${CONTAINER} bin/sh -c "source ~/.cargo/env" || true
-	buildah run $${CONTAINER} bin/sh -c "ls -al ~/" || true
-	buildah run $${CONTAINER} bin/sh -c "which cargo" || true
-	buildah run $${CONTAINER} bin/sh -c "rustup component add rustfmt clippy" || true
-	buildah run $${CONTAINER} bin/sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing
+	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+	buildah run $${CONTAINER} sh -c "source ~/.cargo/env" || true
+	buildah run $${CONTAINER} sh -c "ls -al ~/" || true
+	buildah run $${CONTAINER} sh -c "which cargo" || true
+	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy" || true
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 golang:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
-	buildah run $${CONTAINER} bin/sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz'
-	buildah run $${CONTAINER} bin/sh -c 'tar -C /home/.local -xzf $(GO_VER).linux-amd64.tar.gz'
+	buildah run $${CONTAINER} sh -c \
+  'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz
+  && tar -C /usr/local --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+	podman run $@:$(ALPINE_VER) sh -c 'tree'
 	# sudo rm -rf $(HOME)/.local/go
 		# tar -C $(HOME)/.local -xzf $(VERSION).linux-amd64.tar.gz
 

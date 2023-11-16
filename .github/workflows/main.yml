@@ -18,6 +18,6 @@ jobs:
           make version
           make base
           #make rust
-          # make golang
+          make golang
           # make alpine_toolbox
           podman images

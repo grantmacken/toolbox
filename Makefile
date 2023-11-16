@@ -33,8 +33,8 @@ gettext-tiny-dev \
 tree \
 git' &>/dev/null
 	buildah config --author='Grant Mackenzie' --workingdir='/home' $${CONTAINER}
-	buildah run $${CONTAINER} bin/sh -c 'pwd'
-	buildah run $${CONTAINER} bin/sh -c 'tree'
+	buildah run $${CONTAINER} sh -c 'pwd'
+	buildah run $${CONTAINER} sh -c 'tree'
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
  
@@ -42,8 +42,8 @@ rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
-	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+	buildah run $${CONTAINER} /bin/ash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+	buildah run $${CONTAINER} /bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} bin/sh -c "source ~/.cargo/env" || true
 	buildah run $${CONTAINER} bin/sh -c "ls -al ~/" || true
 	buildah run $${CONTAINER} bin/sh -c "which cargo" || true
@@ -56,7 +56,7 @@ golang:
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} bin/sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz'
-	buildah run $${CONTAINER} bin/sh -c 'tar -C ~/.local -xzf $(GO_VER).linux-amd64.tar.gz'
+	buildah run $${CONTAINER} bin/sh -c 'tar -C /home/.local -xzf $(GO_VER).linux-amd64.tar.gz'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	# sudo rm -rf $(HOME)/.local/go
 		# tar -C $(HOME)/.local -xzf $(VERSION).linux-amd64.tar.gz

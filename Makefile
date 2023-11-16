@@ -32,9 +32,9 @@ unzip \
 gettext-tiny-dev \
 tree \
 git' &>/dev/null
-	# buildah run $${CONTAINER} bin/sh -c 'pwd'
-	# buildah run $${CONTAINER} bin/sh -c 'tree'
 	buildah config --author='Grant Mackenzie' --workingdir='/home' $${CONTAINER}
+	buildah run $${CONTAINER} bin/sh -c 'pwd'
+	buildah run $${CONTAINER} bin/sh -c 'tree'
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
  

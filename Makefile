@@ -54,8 +54,9 @@ golang:
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
+&& mkdir -p /usr/local/go \
 && tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
-&& tree /usr/local && cd /usr/local/bin && ln -s /usr/local/go/bin/go'
+&& cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	podman run $@:$(ALPINE_VER) sh -c 'tree /usr/local'
 
@@ -77,10 +78,10 @@ git'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	podman images
 	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'which nvim'
-	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/share'
-	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/bin'
-	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/lib/nvim'
-	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/nvim'
+	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/share'
+	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/bin'
+	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/lib/nvim'
+	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/nvim'
 
 
 .PHONY: alpine_rust

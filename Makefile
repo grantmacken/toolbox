@@ -23,6 +23,7 @@ base:
 	echo 'Building base'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	buildah config --workingdir /home $${CONTAINER} 
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 build-base \
 cmake \
@@ -32,11 +33,13 @@ unzip \
 gettext-tiny-dev \
 tree \
 git' &>/dev/null
+	buildah run $${CONTAINER} bin/sh -c 'pwd'
+	buildah run $${CONTAINER} bin/sh -c 'tree'
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
  
-rust:
-	echo 'Building rust tooling'
+rustup:
+	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} bin/sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
@@ -46,7 +49,7 @@ rust:
 	buildah run $${CONTAINER} bin/sh -c "which cargo" || true
 	buildah run $${CONTAINER} bin/sh -c "rustup component add rustfmt clippy" || true
 	buildah run $${CONTAINER} bin/sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing
-	buildah commit --rm $${CONTAINER} rust:$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 golang:
 	echo 'Building $@ tooling'
@@ -58,7 +61,6 @@ golang:
 	# sudo rm -rf $(HOME)/.local/go
 		# tar -C $(HOME)/.local -xzf $(VERSION).linux-amd64.tar.gz
 
-.PHONY: neovim
 neovim:
 	echo 'Building nevim'
 	echo " - from alpine version: $(ALPINE_VER)"

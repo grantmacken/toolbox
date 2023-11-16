@@ -58,7 +58,8 @@ golang:
 && tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
 && cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
+	# podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'which go'
 
 # && cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 neovim:

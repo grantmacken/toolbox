@@ -33,8 +33,8 @@ gettext-tiny-dev \
 tree \
 git' &>/dev/null
 	buildah config --author='Grant Mackenzie' --workingdir='/home' $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'tree /usr/local'
-	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
 
 rustup:
 	echo 'Building $@ tooling'
@@ -58,22 +58,14 @@ golang:
 && tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
 && cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	podman run $@:$(ALPINE_VER) sh -c 'tree /usr/local'
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
 
 # && cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 neovim:
 	echo 'Building $@ container'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
-	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
-build-base \
-cmake \
-coreutils \
-curl \
-unzip \
-gettext-tiny-dev \
-git'
-	buildah run $${CONTAINER} bin/sh -c 'git clone https://github.com/neovim/neovim \
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim \
 && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	podman images

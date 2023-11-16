@@ -23,7 +23,7 @@ base:
 	echo 'Building base'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
-	buildah config --workingdir /home $${CONTAINER} 
+	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 build-base \
 cmake \
@@ -33,8 +33,8 @@ unzip \
 gettext-tiny-dev \
 tree \
 git' &>/dev/null
-	buildah run $${CONTAINER} bin/sh -c 'pwd'
-	buildah run $${CONTAINER} bin/sh -c 'tree'
+	# buildah run $${CONTAINER} bin/sh -c 'pwd'
+	# buildah run $${CONTAINER} bin/sh -c 'tree'
 	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
 
  

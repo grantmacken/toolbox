@@ -55,8 +55,8 @@ golang:
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
 && tar -C /usr/local --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
-&& mkdir -p /usr/local/bin && cd /usr/local/bin \
-&& ln -s /usr/local/go/bin/go'
+&& tree /usr/local/go \
+&& cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	podman run $@:$(ALPINE_VER) sh -c 'tree /usr/local'
 	# sudo rm -rf $(HOME)/.local/go

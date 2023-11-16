@@ -23,7 +23,7 @@ base:
 	echo 'Building base'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
-	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache \
 build-base \
 cmake \
 coreutils \
@@ -62,9 +62,9 @@ golang:
 		# tar -C $(HOME)/.local -xzf $(VERSION).linux-amd64.tar.gz
 
 neovim:
-	echo 'Building nevim'
+	echo 'Building $@ container'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
 	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
 build-base \
 cmake \
@@ -75,21 +75,12 @@ gettext-tiny-dev \
 git'
 	buildah run $${CONTAINER} bin/sh -c 'git clone https://github.com/neovim/neovim \
 && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-	buildah commit --rm $${CONTAINER} base:$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	podman images
-	# podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'
-	# nvim --version
-
-.PHONY: inspect
-inspect:
-	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'which nvim'
-	echo
+	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'which nvim'
 	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/share'
-	echo
 	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/bin'
-	echo
 	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/lib/nvim'
-	echo
 	podman run localhost/base:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/nvim'
 
 

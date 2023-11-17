@@ -95,7 +95,6 @@ cosign \
 just \
 dbus-x11 \
 github-cli \
-eza \
 ripgrep \
 plocate \
 grep \

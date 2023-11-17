@@ -85,7 +85,8 @@ tbx: neovim
 build-base \ # build tooling make and friend
 tree \
 btop \ # better top
-bat \ a better ls
+bat \ # a better ls
+zstd \ # fast lossless compression algorith
 atuin \
 chezmoi \
 clipboard \
@@ -95,6 +96,7 @@ dbus-x11 \
 github-cli \
 eza \
 ripgrep \
+plocate \
 grep \
 python3 \
 npm \

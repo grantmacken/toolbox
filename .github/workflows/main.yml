@@ -13,11 +13,9 @@ jobs:
       #     registry: ghcr.io
       #     username: ${{ github.actor }}
       #     password: ${{ secrets.GITHUB_TOKEN }}
-      - name: build images
-        run: |
-          make version
-          make base
-          #make rust
-          make golang
-          make neovim
-          podman images
+      - name: build base image
+        run: make version && make base
+      - name: build tbx image
+        run: make tbx
+      - name: inspect
+        run: podman images

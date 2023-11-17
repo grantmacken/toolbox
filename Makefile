@@ -29,6 +29,7 @@ cmake \
 coreutils \
 curl \
 unzip \
+gzip \
 gettext-tiny-dev \
 tree \
 git' &>/dev/null
@@ -60,50 +61,51 @@ golang:
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	# podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'which go'
+	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
 
-# && cd /usr/local/bin && ln -s /usr/local/go/bin/go'
+
 neovim:
 	echo 'Building $@ container'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
+	# rm install stuff from a checkhealth and Mason build tool required for LSP
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim \
 && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	podman images
-	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'which nvim'
-	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/share'
-	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/bin'
-	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ls -l /usr/local/lib/nvim'
-	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/nvim'
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'which nvim'
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/share'
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/bin'
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/lib/nvim'
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
 
-
-.PHONY: alpine_rust
-alpine_rust:  ## buildah build alpine
+tbx: neovim
 	CONTAINER=$$(buildah from quay.io/toolbx-images/alpine-toolbox:3.18)
-	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
-
-
-.PHONY: alpine_toolbox
-alpine_toolbox:  ## buildah build alpine
-	CONTAINER=$$(buildah from quay.io/toolbx-images/alpine-toolbox:3.18)
-	buildah run $${CONTAINER} bin/sh -c 'apk add --no-cache \
-build-base \
-clipboard \
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache \
+build-base \ # build tooling make and friend
+tree \
+btop \ # better top
+bat \ a better ls
+atuin \
 chezmoi \
+clipboard \
 cosign \
-ncurses-libs \
-python3 \
-gzip \
-tzdata \
-grep \
-ripgrep \
+just \ # task runner
+dbus-x11 \
 github-cli \
+eza \
+ripgrep \
+grep \
+python3 \
+npm \
+ncurses \
+python3 \
+tzdata \
 wl-clipboard'
-	buildah  copy --from localhost/base:$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah  copy --from localhost/base:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
-	buildah  copy --from localhost/base:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
-	buildah run $${CONTAINER} /bin/sh -c 'ls -l /usr/local/bin' || true
-	buildah run $${CONTAINER} /bin/sh -c 'ln -vfs /bin/sh /usr/bin/sh' || true
+	buildah  copy --from localhost/neovim:$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
+	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
+	buildah run $${CONTAINER} sh -c 'tree /usr/local' || true
 	# buildah inspect $${CONTAINER}
 	buildah commit --rm $${CONTAINER} tbx:$(ALPINE_VER)
 	# toolbox create --image localhost/tbx:$${VERSION} --container tbx

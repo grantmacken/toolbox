@@ -85,33 +85,33 @@ tbx: neovim
 build-base \
 tree \
 btop \
-bat \
-zstd \
+age \
 atuin \
+bat \
 chezmoi \
 clipboard \
-age \
 cosign \
-just \
 dbus-x11 \
 github-cli \
-ripgrep \
-plocate \
 grep \
-python3 \
-npm \
+just \
 ncurses \
+npm \
+plocate \
 python3 \
+ripgrep \
 tzdata \
+zstd \
 wl-clipboard'
-	buildah  copy --from localhost/neovim:$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
-	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
-	buildah run $${CONTAINER} sh -c 'tree /usr/local' || true
-	# buildah inspect $${CONTAINER}
-	buildah commit --rm $${CONTAINER} tbx:$(ALPINE_VER)
-	# toolbox create --image localhost/tbx:$${VERSION} --container tbx
-	# toolbox enter tbx
+	buildah  copy --from localhost/$(<):$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
+	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
+	# buildah run $${CONTAINER} sh -c 'tree /usr/local' || true
+	buildah commit --rm --squash $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
+ifdef GITHUB_ACTIONS
+	buildah push ghcr.io/$(REPO_OWNER)/$(call Build,$@):v$${VERSION}
+endif
+
 
 .PHONY: clean
 clean:

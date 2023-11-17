@@ -82,16 +82,17 @@ neovim:
 tbx: neovim
 	CONTAINER=$$(buildah from quay.io/toolbx-images/alpine-toolbox:3.18)
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache \
-build-base \ # build tooling make and friend
+build-base \
 tree \
-btop \ # better top
-bat \ # a better ls
-zstd \ # fast lossless compression algorith
+btop \
+bat \
+zstd \
 atuin \
 chezmoi \
 clipboard \
+age \
 cosign \
-just \ # task runner
+just \
 dbus-x11 \
 github-cli \
 eza \

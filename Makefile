@@ -107,16 +107,10 @@ wl-clipboard'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
 	# buildah run $${CONTAINER} sh -c 'tree /usr/local' || true
-	buildah commit --rm --squash $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
+	buildah commit --rm --squash $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
 ifdef GITHUB_ACTIONS
-	buildah push ghcr.io/$(REPO_OWNER)/$(call Build,$@):v$${VERSION}
+	buildah push ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
 endif
-
-
-.PHONY: clean
-clean:
-	podman stop tbx || true
-	toolbox rm tbx || true
 
 .PHONY: x2default
 x2default:    ## buildah build alpine

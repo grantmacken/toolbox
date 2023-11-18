@@ -29,7 +29,6 @@ cmake \
 coreutils \
 curl \
 unzip \
-gzip \
 gettext-tiny-dev \
 tree \
 git' &>/dev/null
@@ -99,7 +98,9 @@ ncurses \
 npm \
 plocate \
 python3 \
+py3-pip \
 ripgrep \
+gzip \
 tzdata \
 zstd \
 wl-clipboard'
@@ -134,9 +135,7 @@ list:
 
 .PHONY: create
 create:
-	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
-	echo " - alpine version: $$VERSION"
-	toolbox create --image localhost/tbx:3.18.4 
+	distrobox-host-exec sh -c 'distrobox create --image ghcr.io/grantmacken/tbx:v3.18.4 --name tbx'
 
 
 

@@ -104,6 +104,7 @@ gzip \
 tzdata \
 zstd \
 wl-clipboard'
+	buildah run $${CONTAINER} sh -c 'npm install -g neovim'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
@@ -140,6 +141,7 @@ create:
 clean:
 	distrobox stop --yes --name tbx
 	distrobox rm tbx
+	podman images
 
 	.PHONY: alpine
 alpine:    ## buildah build alpine

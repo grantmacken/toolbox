@@ -133,21 +133,13 @@ x2default:    ## buildah build alpine
 list:
 	toolbox list
 
-.PHONY: create
 create:
 	distrobox-host-exec sh -c 'distrobox create --image ghcr.io/grantmacken/tbx:v3.18.4 --name tbx'
 
 
-
-
-.PHONY: versions
-versions:
-	podman pull docker.io/alpine:latest
-	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
-	sed -i "s/ALPINE_VER=.*/ALPINE_VER=v$${VERSION}/" .env
-	echo " - alpine version: $$VERSION"
-
-
+clean:
+	distrobox stop --yes --name tbx
+	distrobox rm tbx
 
 	.PHONY: alpine
 alpine:    ## buildah build alpine

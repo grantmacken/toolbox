@@ -21,5 +21,5 @@ jobs:
           registry: ${{ env.IMAGE_REGISTRY }}
       - name: build base image
         run: make version && make alpine-toolbox-base
-      # - name: build and push tbx image
-      #   run: make tbx
+      - name: build and push tbx image
+        run: make tbx

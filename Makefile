@@ -20,7 +20,7 @@ version:
 
 DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
-lpine-toolbox-base:
+alpine-toolbox-base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
@@ -75,7 +75,7 @@ golang:
 neovim:
 	echo 'Building $@ container'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER))
 	# rm install stuff from a checkhealth and Mason build tool required for LSP
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim \
 && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null

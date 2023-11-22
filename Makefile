@@ -94,12 +94,15 @@ xxx:
 tbx: neovim
 	CONTAINER=$$(buildah from localhost/base:v$(ALPINE_VER))
 	# install build-base so we can use make and build with neovim Mason
-	# For mason also install python and pip and npm 
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip npm'
+	# build tools: python and pip and npmp rustup
+	# @see https://pnpm.io/
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip pnpm rustup'
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard'
-	# buildah run $${CONTAINER} sh -c 'npm install -g neovim'
+	# install node neovim provider
+	buildah run $${CONTAINER} sh -c 'pnpm install -g neovim'
+	# install node neovim provider
 	# @ copy over neovim build
 	buildah  copy --from localhost/$(<):$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
@@ -115,8 +118,6 @@ tbx: neovim
 ifdef GITHUB_ACTIONS
 	buildah push ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
 endif
-
-
 
 # ln -fs /bin/sh /usr/bin/sh && \
 # ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/flatpak && \ 
@@ -145,7 +146,7 @@ xxxdefault:
 # buildah commit --rm --squash $${CONTAINER} $(NAME):$(VERSION)
 # ifdef GITHUB_ACTIONS
 # 	echo 'GITHUB_ACTIONS'
-# 	#buildah push ghcr.io/$(REPO_OWNER)/$(call Build,$@):v$${VERSION}
+# 	#buildah push ghcr.io/$(REPO_OWNER)/$(call Build,$@):v$${VERSION}
 # endif
 
 .PHONY: help

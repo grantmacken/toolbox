@@ -20,14 +20,14 @@ version:
 
 DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
-alpine-toolbox-base:
+lpine-toolbox-base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	buildah config \
 		--label com.github.containers.toolbox="true" \
-		--label version="$(ALPINE_VER)" \
+		--label version="v$(ALPINE_VER)" \
 		--label usage="Use with toolbox or distrobox command" \
 		--label summary="base dev toolbx alpine image" \
 		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
@@ -36,7 +36,7 @@ alpine-toolbox-base:
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+	buildah commit --rm --squash $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## @ https://distrobox.it/posts/distrobox_custom/
 	# podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'

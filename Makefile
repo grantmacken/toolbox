@@ -20,8 +20,8 @@ version:
 
 DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
-base:
-	echo 'Building base'
+alpine-toolbox-base:
+	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
@@ -41,6 +41,9 @@ base:
 	## @ https://distrobox.it/posts/distrobox_custom/
 	# podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'
 	podman images
+ifdef GITHUB_ACTIONS
+	buildah push ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
+endif
 
 rustup:
 	echo 'Building $@ tooling'

@@ -8,7 +8,6 @@ MAKEFLAGS += --silent
 # https://github.com/toolbx-images/images/blob/main/alpine/edge/extra-packages
 
 include .env
-
 default: neovim
 
 .PHONY: version
@@ -109,8 +108,8 @@ tbx: neovim
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
-	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/bin/podman'
-	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/bin/buildah'
+	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman'
+	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
 	# buildah run $${CONTAINER} sh -c 'tree /usr/local' || true
 	buildah commit --rm --squash $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
 ifdef GITHUB_ACTIONS

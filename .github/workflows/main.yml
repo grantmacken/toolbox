@@ -20,6 +20,6 @@ jobs:
           password: ${{ env.REGISTRY_PASSWORD }}
           registry: ${{ env.IMAGE_REGISTRY }}
       - name: build base image
-        run: make version && make base
+        run: make version && make alpine-toolbox-base
       # - name: build and push tbx image
       #   run: make tbx

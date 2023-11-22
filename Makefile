@@ -18,6 +18,18 @@ version:
 	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
 	echo '-----------------------------------------------'
 
+alpine-distrobox:
+	echo 'Building $@'
+	echo ' - from alpine version: $(ALPINE_VER)'
+	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	buildah config \
+--label com.github.containers.toolbox='true' \
+--author 'Grant Mackenzie <grantmacken@gmail.com>' \
+$${CONTAINER}
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+	
+
+
 .PHONY: base
 base:
 	echo 'Building base'
@@ -135,21 +147,19 @@ list:
 	toolbox list
 
 create:
-	distrobox-host-exec sh -c 'distrobox create --image ghcr.io/grantmacken/tbx:v3.18.4 --name tbx'
+	distrobox-host-exec sh -c 'distrobox create --image ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER) --name tbx'
 
 
 clean:
-	distrobox stop --yes --name tbx
-	distrobox rm tbx
+	distrobox-host-exec sh -c 'distrobox stop --yes --name tbx' || true
+	distrobox-host-exec sh -c 'distrobox rm --force tbx' || true
+	podman rmi ghcr.io/$(REPO_OWNER)/tbx:v$(ALPINE_VER) || true
 	podman images
 
-	.PHONY: alpine
 alpine:    ## buildah build alpine
 	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
 	echo " - alpine version: $$VERSION"
 	CONTAINER=$$(buildah from docker.io/alpine:$${VERSION})
-	buildah config --label com.github.containers.toolbox="true" $${CONTAINER}	
-	buildah config --author 'Grant Mackenzie <grantmacken@gmail.com>' $${CONTAINER}	
 	#echo 'Enable password less sudo'
 	#buildah run $${CONTAINER} echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/toolbox
 	#echo 'Copy the os-release file'

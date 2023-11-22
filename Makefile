@@ -78,12 +78,14 @@ golang:
 neovim: 
 	echo 'Building container localhost/$@:v$(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base cmake coreutils curl unzip gettext-tiny-dev'
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base cmake coreutils curl unzip gettext-tiny-dev git' &>/dev/null
 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
 	# TODO install stuff from a checkhealth and Mason build tool required for LSP
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
 	buildah commit --rm --squash $${CONTAINER} $@:$(ALPINE_VER)
 	podman images
+
+xxx:
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'which nvim'
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/share'
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/bin'

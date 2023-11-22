@@ -18,35 +18,19 @@ version:
 	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
 	echo '-----------------------------------------------'
 
-alpine-distrobox:
-	echo 'Building $@'
-	echo ' - from alpine version: $(ALPINE_VER)'
-	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
-	buildah config \
---label com.github.containers.toolbox='true' \
---author 'Grant Mackenzie <grantmacken@gmail.com>' \
-$${CONTAINER}
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	
+DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
-
-.PHONY: base
 base:
 	echo 'Building base'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache \
-build-base \
-cmake \
-coreutils \
-curl \
-unzip \
-gettext-tiny-dev \
-tree \
-git' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 	buildah config --author='Grant Mackenzie' --workingdir='/home' $${CONTAINER}
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
+	## CHECK! To test if all packages requirements are met just run this in the container:
+	## @ https://distrobox.it/posts/distrobox_custom/
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $$dep";done' | grep -oP 'missing \K.+' | tee -a missing.txt
+	podman images
 
 rustup:
 	echo 'Building $@ tooling'

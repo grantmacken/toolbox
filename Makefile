@@ -18,9 +18,9 @@ version:
 	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
 	echo '-----------------------------------------------'
 
-DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
+# DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
-alpine-toolbox-base:
+base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
@@ -39,7 +39,7 @@ alpine-toolbox-base:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
-	buildah commit --rm $${CONTAINER} localhost/$(REPO_OWNER)/$@:v$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## @ https://distrobox.it/posts/distrobox_custom/
 	# podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'
@@ -93,7 +93,7 @@ xxx:
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
 
 tbx: neovim
-	CONTAINER=$$(buildah from localhost/alpine-toolbox-base:v$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/base:v$(ALPINE_VER))
 	# install build-base so we can use make and build with neovim Mason
 	# For mason also install python and pip and npm 
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip npm'

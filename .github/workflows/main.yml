@@ -22,4 +22,4 @@ jobs:
       - name: build base image
         run: make version && make alpine-toolbox-base
       - name: build and push tbx image
-        run: make neovim
+        run: make tbx

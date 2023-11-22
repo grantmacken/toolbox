@@ -24,12 +24,20 @@ base:
 	echo 'Building base'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	buildah config \
+		--label com.github.containers.toolbox="true" \
+		--label version="$(ALPINE_VER)" \
+		--label usage="Use with toolbox or distrobox command" \
+		--label summary="base dev toolbx alpine image" \
+		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
+		--workingdir /home \
+		$${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
-	buildah config --author='Grant Mackenzie' --workingdir='/home' $${CONTAINER}
+	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## @ https://distrobox.it/posts/distrobox_custom/
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $$dep";done' | grep -oP 'missing \K.+' | tee -a missing.txt
+	# podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'
 	podman images
 
 rustup:
@@ -77,7 +85,6 @@ neovim:
 tbx: neovim
 	CONTAINER=$$(buildah from quay.io/toolbx-images/alpine-toolbox:3.18)
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache \
-build-base \
 tree \
 btop \
 age \

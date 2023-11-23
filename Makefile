@@ -28,7 +28,7 @@ build-base:
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 
 
-base:
+boxkit-base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))

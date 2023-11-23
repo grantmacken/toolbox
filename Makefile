@@ -55,7 +55,7 @@ rustup:
 golang:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
 && mkdir -p /usr/local/go \
 && tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
@@ -95,10 +95,10 @@ tbx: neovim
 		$${CONTAINER}
 	# install build-base so we can use make and build with neovim Mason
 	# build tools: python and pip and npmp rustup
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip rustup'
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip rustup' &>/dev/null
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard'
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null
 	# install node neovim provider
 	# @see https://pnpm.io/
 	# buildah run $${CONTAINER} wget -qO- https://get.pnpm.io/install.sh | ENV="$$HOME/.bashrc" SHELL="$$(which bash)" bash -
@@ -112,12 +112,12 @@ tbx: neovim
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
-	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman'
-	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
-	# buildah run $${CONTAINER} sh -c 'tree /usr/local' || true
-	buildah commit --rm --squash $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
+	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
+	buildah run $${CONTAINER} sh -c "echo $$PATH"
+	buildah commit --rm $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
 ifdef GITHUB_ACTIONS
 	buildah push ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
+	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
 endif
 
 # ln -fs /bin/sh /usr/bin/sh && \

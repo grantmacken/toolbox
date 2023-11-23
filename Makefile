@@ -49,12 +49,12 @@ build-base:
 # patch
 # build-base
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
-# 
+# podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'
 
 base: build-base
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
@@ -63,7 +63,6 @@ base: build-base
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## @ https://distrobox.it/posts/distrobox_custom/
-	# podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'
 	podman images
 
 # ifdef GITHUB_ACTIONS
@@ -73,7 +72,7 @@ base: build-base
 rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} sh -c "source /home/.cargo/env" || true
 	buildah run $${CONTAINER} sh -c "which cargo" || true
@@ -84,7 +83,7 @@ rustup:
 golang:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
 		&& mkdir -p /usr/local/go \
 		&& tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
@@ -96,7 +95,7 @@ golang:
 
 neovim: 
 	echo 'Building container localhost/$@:v$(ALPINE_VER)'
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache cmake coreutils gettext-tiny-dev' &>/dev/null
 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
 	# TODO install stuff from a checkhealth and Mason build tool required for LSP
@@ -110,7 +109,7 @@ neovim:
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
 
 tbx: neovim
-	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/base:v$(ALPINE_VER))
 	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
 	buildah config \
 		--label com.github.containers.toolbox="true" \

@@ -110,7 +110,7 @@ neovim:
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
 
 tbx: neovim
-	CONTAINER=$$(buildah from localhost/base:v$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
 	buildah config \
 		--label com.github.containers.toolbox="true" \

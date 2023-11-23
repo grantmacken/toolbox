@@ -42,10 +42,8 @@ base:
 rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/base:v$(ALPINE_VER))
+	CONTAINER=$$(buildah from alpine version: $(ALPINE_VER)))
 	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	buildah run $${CONTAINER} sh -c "pwd" || true
-	buildah run $${CONTAINER} sh -c "tree" || true
 	buildah run $${CONTAINER} sh -c "source /home/.cargo/env" || true
 	buildah run $${CONTAINER} sh -c "which cargo" || true
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy" || true
@@ -74,8 +72,6 @@ neovim:
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
 	buildah commit --rm --squash $${CONTAINER} $@:$(ALPINE_VER)
 	podman images
-
-xxx:
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'which nvim'
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/share'
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/bin'

@@ -23,7 +23,7 @@ jobs:
         run: make version && make base
       - name: build golang 
         run: make golang
-      # - name: build rustup
-      #   run: make rustup
+      - name: build rustup
+        run: make rustup
       - name: build and push tbx image
         run: make tbx

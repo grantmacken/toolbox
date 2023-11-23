@@ -51,7 +51,7 @@ build-base:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 # 
 
-base:
+base: build-base
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))

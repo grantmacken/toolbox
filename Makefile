@@ -24,7 +24,7 @@ build-base:
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base'
+	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base curl'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 
 # libgcc
@@ -73,7 +73,7 @@ boxkit-base:
 rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER)))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} sh -c "source /home/.cargo/env" || true
 	buildah run $${CONTAINER} sh -c "which cargo" || true
@@ -84,20 +84,20 @@ rustup:
 golang:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
-&& mkdir -p /usr/local/go \
-&& tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
-&& cd /usr/local/bin && ln -s /usr/local/go/bin/go'
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+		&& mkdir -p /usr/local/go \
+		&& tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
+		&& cd /usr/local/bin && ln -s /usr/local/go/bin/go'
+		buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	# podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'which go'
 	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
 
 neovim: 
 	echo 'Building container localhost/$@:v$(ALPINE_VER)'
-	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base cmake coreutils curl unzip gettext-tiny-dev git' &>/dev/null
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache cmake coreutils curl unzip gettext-tiny-dev git' &>/dev/null
 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
 	# TODO install stuff from a checkhealth and Mason build tool required for LSP
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null

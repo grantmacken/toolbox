@@ -24,7 +24,7 @@ build-base:
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base curl'
+	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base zip curl git'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 
 # libgcc
@@ -57,7 +57,7 @@ base: build-base
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat git gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
@@ -97,7 +97,7 @@ golang:
 neovim: 
 	echo 'Building container localhost/$@:v$(ALPINE_VER)'
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache cmake coreutils curl unzip gettext-tiny-dev git' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache cmake coreutils gettext-tiny-dev' &>/dev/null
 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
 	# TODO install stuff from a checkhealth and Mason build tool required for LSP
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null

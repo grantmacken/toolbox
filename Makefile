@@ -51,13 +51,13 @@ build-base:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 # 
 
-boxkit-base:
+base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
-	CONTAINER=$$(buildah from localhost/build-box:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils curl diffutils docs findutils gcompat git gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat git gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
@@ -121,8 +121,11 @@ tbx: neovim
 		--workingdir /home \
 		$${CONTAINER}
 	# install build-base so we can use make and build with neovim Mason
-	# build tools: python and pip and npmp rustup
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip rustup' &>/dev/null
+	# build tools: python and pip
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache python3 py3-pip' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache rustup' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'which rustup-init'
+	buildah run $${CONTAINER} sh -c 'rustup-init'
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null
@@ -133,8 +136,8 @@ tbx: neovim
 	# buildah run $${CONTAINER} sh -c 'pnpm install -g neovim'
 	# @ copy over neovim build
 	buildah  copy --from localhost/$(<):$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'
-	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/lib' '/usr/local/lib'
+	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
+	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER} '/usr/local/lib' '/usr/local/lib'
 	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh'
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
@@ -162,7 +165,6 @@ xxxdefault:
 	buildah config --label summary="A cloud-native terminal experience" $${CONTAINER}	
 	buildah config --label smaintainer="grantmacken@gmail.com" $${CONTAINER}	
 	buildah commit --rm --squash $${CONTAINER} $(NAME):$(VERSION)
-
 # buildah config --label com.github.containers.toolbox="true" $${CONTAINER}	
 # buildah config --label org.opencontainers.image.base.name="$(FROM):$(VERSION)" $${CONTAINER}
 # buildah config --label org.opencontainers.image.title='dev toolbx container' $${CONTAINER} # title

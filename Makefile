@@ -96,14 +96,14 @@ tbx: neovim
 	# install build-base so we can use make and build with neovim Mason
 	# build tools: python and pip and npmp rustup
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip rustup'
-	# @see https://pnpm.io/
-	buildah run $${CONTAINER} wget -qO- https://get.pnpm.io/install.sh | ENV="$$HOME/.bashrc" SHELL="$$(which bash)" bash -
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard'
 	# install node neovim provider
-	buildah run $${CONTAINER} sh -c 'pnpm install -g neovim'
+	# @see https://pnpm.io/
+	# buildah run $${CONTAINER} wget -qO- https://get.pnpm.io/install.sh | ENV="$$HOME/.bashrc" SHELL="$$(which bash)" bash -
 	# install node neovim provider
+	# buildah run $${CONTAINER} sh -c 'pnpm install -g neovim'
 	# @ copy over neovim build
 	buildah  copy --from localhost/$(<):$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER}  '/usr/local/share' '/usr/local/share'

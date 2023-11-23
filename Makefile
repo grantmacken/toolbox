@@ -27,15 +27,37 @@ build-base:
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 
+# libgcc
+# libstdc++
+# zstd-libs
+# binutils
+# libmagic
+# file
+# libgomp
+# libatomic
+# gmp
+# isl26
+# mpfr4
+# mpc1
+# gcc
+# libstdc++-dev
+# musl-dev
+# libc-dev
+# g++
+# make
+# fortify-headers
+# patch
+# build-base
+	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
+# 
 
 boxkit-base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
-	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-box:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils curl diffutils docs findutils gcompat git gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
-	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
@@ -51,7 +73,7 @@ boxkit-base:
 rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from alpine version: $(ALPINE_VER)))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER)))
 	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} sh -c "source /home/.cargo/env" || true
 	buildah run $${CONTAINER} sh -c "which cargo" || true

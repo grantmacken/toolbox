@@ -24,15 +24,6 @@ base:
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
-	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
-	buildah config \
-		--label com.github.containers.toolbox="true" \
-		--label version="v$(ALPINE_VER)" \
-		--label usage="Use with toolbox or distrobox command" \
-		--label summary="base dev toolbx alpine image" \
-		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
-		--workingdir /home \
-		$${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils curl diffutils docs findutils gcompat git gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
@@ -93,10 +84,20 @@ xxx:
 
 tbx: neovim
 	CONTAINER=$$(buildah from localhost/base:v$(ALPINE_VER))
+	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
+	buildah config \
+		--label com.github.containers.toolbox="true" \
+		--label version="v$(ALPINE_VER)" \
+		--label usage="Use with toolbox or distrobox command" \
+		--label summary="base dev toolbx alpine image" \
+		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
+		--workingdir /home \
+		$${CONTAINER}
 	# install build-base so we can use make and build with neovim Mason
 	# build tools: python and pip and npmp rustup
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip rustup'
 	# @see https://pnpm.io/
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache build-base python3 py3-pip pnpm rustup'
+	buildah run $${CONTAINER} wget -qO- https://get.pnpm.io/install.sh | ENV="$$HOME/.bashrc" SHELL="$$(which bash)" bash -
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard'

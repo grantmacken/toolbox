@@ -19,6 +19,15 @@ version:
 
 # DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
+build-base:
+	echo 'Building $@'
+	echo ' - from alpine version: $(ALPINE_VER)'
+	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
+	# @see https://pkgs.alpinelinux.org/packages
+	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base'
+	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
+
+
 base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'

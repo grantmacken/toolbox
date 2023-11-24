@@ -87,9 +87,11 @@ rustup:
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo'
-	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version' || true
-	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer" || true
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing
+	buildah run $${CONTAINER} sh -c 'printenv'
+	buildah run $${CONTAINER} sh -c 'echo $$PATH'
+	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
+	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 golang:

@@ -75,10 +75,10 @@ rustup:
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	buildah config \
-		--env ENV RUSTUP_HOME=/usr/local/rustup \
-    --env RUSTUP_HOME=/usr/local/rustup \
-    --env CARGO_HOME=/usr/local/cargo \
-    $${CONTAINER} 
+		--env RUSTUP_HOME=/usr/local/rustup \
+		--env RUSTUP_HOME=/usr/local/rustup \
+		--env CARGO_HOME=/usr/local/cargo \
+		$${CONTAINER} 
 	# buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/1.26.0/x86_64/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true

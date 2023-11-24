@@ -22,8 +22,12 @@ version:
 build-base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
+	
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
+	buildah config \
+		--workingdir /home \
+		$${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base zip curl git'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 
@@ -73,10 +77,17 @@ rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	buildah run $${CONTAINER} sh -c "echo $$HOME" || true
-	buildah run $${CONTAINER} sh -c "source $$HOME/.cargo/env" || true
-	buildah run $${CONTAINER} sh -c "which cargo" || true
+	buildah config \
+		--env ENV RUSTUP_HOME=/usr/local/rustup \
+    --env RUSTUP_HOME=/usr/local/rustup \
+    --env CARGO_HOME=/usr/local/cargo
+ 	wget "$url";    url=""; \
+	# buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/1.26.0/x86_64/rustup-init "
+	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
+	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host x86_64'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo'
+	buildah run $${CONTAINER} sh -c ' rustup --version && cargo --version && rustc --version'
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy" || true
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)

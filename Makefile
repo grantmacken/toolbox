@@ -82,7 +82,7 @@ rustup:
 	# buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/1.26.0/x86_64-unknown-linux-musl/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
-	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host x86_64'
+	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host x86_64-unknown-linux-musl'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo'
 	buildah run $${CONTAINER} sh -c ' rustup --version && cargo --version && rustc --version'
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy" || true

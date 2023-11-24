@@ -22,12 +22,9 @@ version:
 build-base:
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
-	
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
-	buildah config \
-		--workingdir /home \
-		$${CONTAINER}
+	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base zip curl git'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 
@@ -54,12 +51,12 @@ build-base:
 # build-base
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 # podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'
+# @see https://pkgs.alpinelinux.org/packages
 
 base: build-base
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
-	# @see https://pkgs.alpinelinux.org/packages
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
@@ -80,8 +77,8 @@ rustup:
 	buildah config \
 		--env ENV RUSTUP_HOME=/usr/local/rustup \
     --env RUSTUP_HOME=/usr/local/rustup \
-    --env CARGO_HOME=/usr/local/cargo
- 	wget "$url";    url=""; \
+    --env CARGO_HOME=/usr/local/cargo \
+    $${CONTAINER} 
 	# buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/1.26.0/x86_64/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true

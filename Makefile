@@ -25,7 +25,7 @@ build-base:
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah config --workingdir /home $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base zip curl git'
+	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base zip curl git tree'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 
 # libgcc
@@ -58,9 +58,10 @@ base: build-base
 	echo ' - from alpine version: $(ALPINE_VER)'
 	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump tree unzip util-linux wget which xz zip' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
+	buildah run $${CONTAINER} sh -c 'echo $$PATH'
 	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## @ https://distrobox.it/posts/distrobox_custom/
@@ -78,16 +79,20 @@ rustup:
 	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	buildah config \
 		--env RUSTUP_HOME=/usr/local/rustup \
-		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \
 		$${CONTAINER} 
 	# buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/1.26.0/$(RUSTARCH)/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
+	buildah run $${CONTAINER} sh -c 'tree /usr/local'
+
+xxcc:
+	buildah run $${CONTAINER} sh -c 'cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo'
+	buildah run $${CONTAINER} sh -c 'cd /usr/local/bin && ln -s /usr/local/go/bin/go'
 	buildah run $${CONTAINER} sh -c ' rustup --version && cargo --version && rustc --version'
-	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy" || true
+	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer" || true
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 

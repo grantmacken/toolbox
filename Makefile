@@ -74,8 +74,8 @@ rustup:
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	buildah run $${CONTAINER} sh -c "echo $HOME" || true
-	buildah run $${CONTAINER} sh -c "source $HOME/.cargo/env" || true
+	buildah run $${CONTAINER} sh -c "echo $$HOME" || true
+	buildah run $${CONTAINER} sh -c "source $$HOME/.cargo/env" || true
 	buildah run $${CONTAINER} sh -c "which cargo" || true
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy" || true
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" || true # to compile our example Wasm/WASI files for testing

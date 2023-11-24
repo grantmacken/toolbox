@@ -123,8 +123,8 @@ tbx: neovim
 	# build tools: python and pip
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache python3 py3-pip' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache rustup' &>/dev/null
-	buildah run $${CONTAINER} sh -c 'which rustup-init'
-	buildah run $${CONTAINER} sh -c 'rustup-init'
+	# buildah run $${CONTAINER} sh -c 'which rustup-init'
+	# buildah run $${CONTAINER} sh -c 'rustup-init'
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null

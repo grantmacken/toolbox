@@ -158,6 +158,7 @@ tbx:
 	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
 	buildah run $${CONTAINER} sh -c "echo $$PATH"
 	buildah commit --rm $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
+	buildah tag ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER) ghcr.io/$(REPO_OWNER)/$@:latest
 ifdef GITHUB_ACTIONS
 	buildah push ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
 	buildah push ghcr.io/$(REPO_OWNER)/$@:latest

@@ -8,7 +8,12 @@ MAKEFLAGS += --silent
 # https://github.com/toolbx-images/images/blob/main/alpine/edge/extra-packages
 
 include .env
-default: neovim
+
+help: ## show this help	
+	@cat $(MAKEFILE_LIST) | 
+	grep -oP '^[a-zA-Z_-]+:.*?## .*$$' |
+	sort |
+	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: version
 version:
@@ -26,7 +31,7 @@ build-base:
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base zip curl git tree'
-	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 # libgcc
 # libstdc++
@@ -52,31 +57,27 @@ build-base:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache bash bash-completion build-base cmake coreutils curl diffutils docs findutils gettext-tiny-dev git gpg iputils keyutils ncurses-terminfo net-tools openssh-client pigz pinentry rsync sudo util-linux xauth zip'
 # podman run localhost/$@:$(ALPINE_VER) sh -c 'for dep in $(DEPENDENCIES); do ! command -v "$${dep}" && echo "missing $${dep}";done'
 # @see https://pkgs.alpinelinux.org/packages
+# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile'
 
 base: build-base
 	echo 'Building $@'
 	echo ' - from alpine version: $(ALPINE_VER)'
-	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
-	buildah run $${CONTAINER} sh -c 'echo $$PATH'
-	buildah commit --rm $${CONTAINER} $@:v$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## @ https://distrobox.it/posts/distrobox_custom/
 	podman images
 
-# ifdef GITHUB_ACTIONS
-# 	buildah push ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
-# endif
-#rustArch
 RUSTARCH := x86_64-unknown-linux-musl
 
 rustup:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah config \
 		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \
@@ -87,8 +88,6 @@ rustup:
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo'
-	buildah run $${CONTAINER} sh -c 'printenv'
-	buildah run $${CONTAINER} sh -c 'echo $$PATH'
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
@@ -97,7 +96,7 @@ rustup:
 golang:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
 		&& mkdir -p /usr/local/go \
 		&& tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
@@ -108,8 +107,8 @@ golang:
 	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
 
 neovim: 
-	echo 'Building container localhost/$@:v$(ALPINE_VER)'
-	CONTAINER=$$(buildah from localhost/build-base:v$(ALPINE_VER))
+	echo 'Building container localhost/$@:$(ALPINE_VER)'
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache cmake coreutils gettext-tiny-dev' &>/dev/null
 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
 	# TODO install stuff from a checkhealth and Mason build tool required for LSP
@@ -123,14 +122,17 @@ neovim:
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
 
 tbx: neovim
-	CONTAINER=$$(buildah from localhost/base:v$(ALPINE_VER))
-	# @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile
+	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
+	buildah run $${CONTAINER} sh -c 'echo $$PATH'
 	buildah config \
 		--label com.github.containers.toolbox="true" \
-		--label version="v$(ALPINE_VER)" \
+		--label version="$(ALPINE_VER)" \
 		--label usage="Use with toolbox or distrobox command" \
 		--label summary="base dev toolbx alpine image" \
 		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
+		--env RUSTUP_HOME=/usr/local/rustup \
+		--env CARGO_HOME=/usr/local/cargo \
+		--env PATH=/usr/local/cargo/bin:$$PATH \
 		--workingdir /home \
 		$${CONTAINER}
 	# install build-base so we can use make and build with neovim Mason
@@ -151,55 +153,20 @@ tbx: neovim
 	buildah  copy --from localhost/$(<):$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
 	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER} '/usr/local/lib' '/usr/local/lib'
+	#copy over rust build
+	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/rustup' '/usr/local/rustup'
+	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/cargo' '/usr/local/cargo'
 	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh'
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
 	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
 	buildah run $${CONTAINER} sh -c "echo $$PATH"
-	buildah commit --rm $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
 ifdef GITHUB_ACTIONS
-	buildah push ghcr.io/$(REPO_OWNER)/$@:v$(ALPINE_VER)
+	buildah push ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
 	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
 endif
-
-# ln -fs /bin/sh /usr/bin/sh && \
-# ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/flatpak && \ 
-# ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && \
-# ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/rpm-ostree && \
-# ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/transactional-update
-
-.PHONY: xxxdefault
-xxxdefault:
-	CONTAINER=$$(buildah from $(FROM):$(VERSION))
-	buildah run $${CONTAINER} apk add --no-cache neovim
-	buildah config --label com.github.containers.toolbox=true $${CONTAINER}	
-	buildah config --label usage="This image is meant to be used with the toolbox command" $${CONTAINER}	
-	buildah config --label summary="A cloud-native terminal experience" $${CONTAINER}	
-	buildah config --label smaintainer="grantmacken@gmail.com" $${CONTAINER}	
-	buildah commit --rm --squash $${CONTAINER} $(NAME):$(VERSION)
-# buildah config --label com.github.containers.toolbox="true" $${CONTAINER}	
-# buildah config --label org.opencontainers.image.base.name="$(FROM):$(VERSION)" $${CONTAINER}
-# buildah config --label org.opencontainers.image.title='dev toolbx container' $${CONTAINER} # title
-# buildah config --label org.opencontainers.image.descriptiion='This image is meant to be used with the toolbox command' $${CONTAINER} # description
-# buildah config --label org.opencontainers.image.authors='Grant Mackenzie <grantmacken@gmail.com>' $${CONTAINER} # author
-# buildah config --label usage="This image is meant to be used with the toolbox command" $${CONTAINER}	
-# buildah config --label summary="A cloud-native terminal experience" $${CONTAINER}	
-# buildah config --label maintainer="grantmacken@gmail.com" $${CONTAINER}	
-# buildah commit --rm --squash $${CONTAINER} $(NAME):$(VERSION)
-# ifdef GITHUB_ACTIONS
-# 	echo 'GITHUB_ACTIONS'
-# 	#buildah push ghcr.io/$(REPO_OWNER)/$(call Build,$@):v$${VERSION}
-# endif
-
-.PHONY: help
-help: ## show this help	
-	@cat $(MAKEFILE_LIST) | 
-	grep -oP '^[a-zA-Z_-]+:.*?## .*$$' |
-	sort |
-	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-
 
 # btop
 # age

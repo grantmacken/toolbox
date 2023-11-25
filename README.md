@@ -1,4 +1,16 @@
-# my neovim dev distobox toolbox
+# a toolbox container for developing with wasm
+
+## Focus
+
+ - [ ] neovim
+
+ Languages
+
+ - [ ] rust
+ - [ ] golang
+ - [ ] grain
+ - [ ] ocaml
+ - [ ] assembly
 
 ## How to use
 
@@ -13,3 +25,10 @@ If you use toolbx:
 
     toolbox create -i ghcr.io/ublue-os/boxkit -c boxkit
     toolbox enter boxkit
+
+ 
+
+
+
+## rust
+

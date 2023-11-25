@@ -59,18 +59,7 @@ build-base:
 # @see https://pkgs.alpinelinux.org/packages
 # @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile'
 
-base: build-base
-	echo 'Building $@'
-	echo ' - from alpine version: $(ALPINE_VER)'
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade'
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
-	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
-	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	## CHECK! To test if all packages requirements are met just run this in the container:
-	## @ https://distrobox.it/posts/distrobox_custom/
-	podman images
+
 
 RUSTARCH := x86_64-unknown-linux-musl
 
@@ -121,8 +110,11 @@ neovim:
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/lib/nvim'
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
 
-tbx: neovim
-	CONTAINER=$$(buildah from localhost/base:$(ALPINE_VER))
+	## CHECK! To test if all packages requirements are met just run this in the container:
+	## https://distrobox.it/posts/distrobox_custom/
+
+tbx:
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'echo $$PATH'
 	buildah config \
 		--label com.github.containers.toolbox="true" \
@@ -135,6 +127,7 @@ tbx: neovim
 		--env PATH=/usr/local/cargo/bin:$$PATH \
 		--workingdir /home \
 		$${CONTAINER}
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
 	# install build-base so we can use make and build with neovim Mason
 	# build tools: python and pip
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache python3 py3-pip' &>/dev/null
@@ -150,12 +143,14 @@ tbx: neovim
 	# install node neovim provider
 	# buildah run $${CONTAINER} sh -c 'pnpm install -g neovim'
 	# @ copy over neovim build
-	buildah  copy --from localhost/$(<):$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
-	buildah  copy --from localhost/$(<):$(ALPINE_VER)  $${CONTAINER} '/usr/local/lib' '/usr/local/lib'
+	buildah  copy --from localhost/neovim:$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
+	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER} '/usr/local/lib' '/usr/local/lib'
 	#copy over rust build
 	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/rustup' '/usr/local/rustup'
 	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/cargo' '/usr/local/cargo'
+	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
+	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh'
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.

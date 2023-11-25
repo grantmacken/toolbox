@@ -25,5 +25,5 @@ jobs:
         run: make rustup
       # - name: build golang 
       #   run: make golang
-      # - name: build and push tbx image
-      #   run: make tbx
+      - name: build and push tbx image
+        run: make tbx

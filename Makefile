@@ -90,14 +90,15 @@ golang:
 	echo 'Building $@ tooling'
 	echo " - from alpine version: $(ALPINE_VER)"
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'wget -q https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz \
-		&& mkdir -p /usr/local/go \
-		&& tar -C /usr/local/go --strip-components=1 -xzf $(GO_VER).linux-amd64.tar.gz \
-		&& cd /usr/local/bin && ln -s /usr/local/go/bin/go'
-		buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	# podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'which go'
-	podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
+	buildah config \   ;
+		--env GOAMD64='v1' \
+		--env GOARCH='amd64'
+		--env GOOS='linux'\
+		$${CONTAINER} 
+	buildah run $${CONTAINER} sh -c 'wget -O go.tgz https://dl.google.com/go/$(GO_VER).src.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
+	buildah commit --rm --squash $${CONTAINER} $@:$(ALPINE_VER)
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
+	# podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
 
 neovim: 
 	echo 'Building container localhost/$@:$(ALPINE_VER)'

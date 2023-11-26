@@ -167,6 +167,7 @@ tbx:
 	buildah run $${CONTAINER} sh -c 'which go'
 	buildah run $${CONTAINER} sh -c 'which gofmt'
 	buildah run $${CONTAINER} sh -c 'cat /usr/local/go/go.env'
+	# --------------------------------------------------------
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh'

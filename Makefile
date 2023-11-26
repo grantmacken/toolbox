@@ -95,13 +95,15 @@ golang:
 		--env GOARCH='amd64' \
 		--env GOOS='linux' \
 		--env GOCACHE='/tmp/gocache' $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache --virtual .build-deps bash gcc go musl-dev'
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache bash gcc go musl-dev'
 	buildah run $${CONTAINER} sh -c 'wget -O go.tgz https://dl.google.com/go/$(GO_VER).src.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
 	buildah run $${CONTAINER} sh -c 'echo "$$(go env GOROOT)"'
 	buildah run $${CONTAINER} sh -c 'cd /usr/local/go/src && ./make.bash'
+	# remove a few intermediate / bootstrapping files the official binary release tarballs do not contain
 	buildah commit --rm --squash $${CONTAINER} $@:$(ALPINE_VER)
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
 	# podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
+	buildah run $${CONTAINER} sh -c 'rm -rf /usr/local/go/pkg/*/cmd /usr/local/go/pkg/bootstrap /usr/local/go/pkg/obj /usr/local/go/pkg/tool/*/api /usr/local/go/pkg/tool/*/go_bootstrap /usr/local/go/src/cmd/dist/dist "$$GOCACHE"'
 
 neovim: 
 	echo 'Building container localhost/$@:$(ALPINE_VER)'
@@ -157,6 +159,14 @@ tbx:
 	#copy over rust build
 	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/rustup' '/usr/local/rustup'
 	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/cargo' '/usr/local/cargo'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+	buildah run $${CONTAINER} sh -c 'which cargo'
+	#copy over golang build
+	buildah  copy --from localhost/golang:$(ALPINE_VER)  $${CONTAINER} '/usr/local/go' '/usr/local/go'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
+	buildah run $${CONTAINER} sh -c 'which go'
+	buildah run $${CONTAINER} sh -c 'which gofmt'
+	buildah run $${CONTAINER} sh -c 'cat /usr/local/go/go.env'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
 	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh'

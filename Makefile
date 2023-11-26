@@ -89,15 +89,11 @@ rustup:
 golang:
 	echo 'Building $@ tooling'
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah config \ 
-		--env GOAMD64='v1' \
-		--env GOARCH='amd64' \
-		--env GOOS='linux' \
-		--env GOCACHE='/tmp/gocache' \
-		$${CONTAINER}
+	buildah config --env GOAMD64='v1' --env GOARCH='amd64' --env GOOS='linux' --env GOCACHE='/tmp/gocache' $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache --virtual .build-deps bash gcc go musl-dev'
 	buildah run $${CONTAINER} sh -c 'wget -O go.tgz https://dl.google.com/go/$(GO_VER).src.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
 	buildah run $${CONTAINER} sh -c 'cd /usr/local/go/src && ls -al .'
+	buildah run $${CONTAINER} sh -c 'echo "$$(go env GOROOT)"'
 	buildah commit --rm --squash $${CONTAINER} $@:$(ALPINE_VER)
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
 	# podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'

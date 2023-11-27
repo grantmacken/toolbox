@@ -75,20 +75,22 @@ rustup:
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/1.26.0/$(RUSTARCH)/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
-	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'echo " --[[ CHECKS ]]--"'
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
 	'Add components for neovim LSP and formatter' 
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
 	# CLI utilities
 	buildah run $${CONTAINER} sh -c "cargo binstall ripgrep"
-	buildah run $${CONTAINER} sh -c 'which rg'
 	# Spin 
 	buildah run $${CONTAINER} sh -c "git clone https://github.com/fermyon/spin -b v2.0.0 && cd spin"
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi"
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
 	buildah run $${CONTAINER} sh -c "cargo install --locked --path ."
 	buildah run $${CONTAINER} sh -c 'spin --help'
+	buildah run $${CONTAINER} sh -c 'spin --version'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+	buildah run $${CONTAINER} sh -c 'which rg'
+	buildah run $${CONTAINER} sh -c 'which spin'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 

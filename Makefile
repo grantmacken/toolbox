@@ -96,9 +96,7 @@ rustup:
 
 wasmtime:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah config \
-		--env WASMTIME_HOME=/usr/local/wasmtime
-		$${CONTAINER} 
+	buildah config --env WASMTIME_HOME=/usr/local/wasmtime $${CONTAINER} 
 	buildah run $${CONTAINER} sh -c "curl https://wasmtime.dev/install.sh -sSf | bash"
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	

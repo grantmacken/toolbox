@@ -21,11 +21,11 @@ jobs:
           registry: ${{ env.IMAGE_REGISTRY }}
       - name: build base image
         run: make version && make build-base
-      - name: build golang
-        run: make golang
       - name: build rustup
         run: make rustup
-      - name: build neovim
-        run: make neovim
-      - name: build and push tbx image
-        run: make tbx
+      # - name: build golang
+      #   run: make golang
+      # - name: build neovim
+      #   run: make neovim
+      # - name: build and push tbx image
+      #   run: make tbx

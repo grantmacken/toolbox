@@ -78,12 +78,12 @@ rustup:
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'echo " --[[ CHECKS ]]--"'
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
-	'Add components for neovim LSP and formatter' 
+	# 'Add components for neovim LSP and formatter' 
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	# CLI utilities https://github.com/cargo-bins/cargo-binstall
 	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall"
-	buildah run $${CONTAINER} sh -c "cargo binstall ripgrep"
+	buildah run $${CONTAINER} sh -c "cargo binstall--no-confirm --no-symlinks ripgrep stylua just wasm-pack wasmtime"
 	# buildah run $${CONTAINER} sh -c 'which rg'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 

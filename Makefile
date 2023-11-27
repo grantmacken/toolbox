@@ -30,7 +30,7 @@ build-base:
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah config --workingdir /home $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base bash zip curl git tree'
+	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base bash zip curl git tree' &>/dev/null
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 # libgcc
@@ -80,10 +80,14 @@ rustup:
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
 	# 'Add components for neovim LSP and formatter' 
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
+	echo '==================================================='
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
+	echo '==================================================='
 	# CLI utilities https://github.com/cargo-bins/cargo-binstall
-	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall"
-	buildah run $${CONTAINER} sh -c "cargo binstall--no-confirm --no-symlinks ripgrep stylua just wasm-pack wasmtime"
+	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
+	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
+	buildah run $${CONTAINER} sh -c "/usr/local/cargo/bin/cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack wasmtime"
+	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	# buildah run $${CONTAINER} sh -c 'which rg'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
@@ -163,7 +167,7 @@ tbx:
 	# buildah run $${CONTAINER} sh -c 'rustup-init'
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep just ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null
 	# install node neovim provider
 	# @see https://pnpm.io/
 	# buildah run $${CONTAINER} wget -qO- https://get.pnpm.io/install.sh | ENV="$$HOME/.bashrc" SHELL="$$(which bash)" bash -

@@ -21,8 +21,10 @@ jobs:
           registry: ${{ env.IMAGE_REGISTRY }}
       - name: build base image
         run: make version && make build-base
-      - name: build rustup
-        run: make rustup
+      - name: wasm
+        run: make wasmtime
+      # - name: build rustup
+      #   run: make rustup
       # - name: build golang
       #   run: make golang
       # - name: build neovim

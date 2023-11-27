@@ -30,7 +30,7 @@ build-base:
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah config --workingdir /home $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base zip curl git tree'
+	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base bash zip curl git tree'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 # libgcc
@@ -80,10 +80,15 @@ rustup:
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
 	'Add components for neovim LSP and formatter' 
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
+	# CLI utilities
 	buildah run $${CONTAINER} sh -c "cargo binstall ripgrep"
-	buildah run $${CONTAINER} sh -c 'echo " --[[ CHECKS ]]--"'
-	buildah run $${CONTAINER} sh -c 'which ripgrep'
+	buildah run $${CONTAINER} sh -c 'which rg'
+	# Spin 
+	buildah run $${CONTAINER} sh -c "git clone https://github.com/fermyon/spin -b v2.0.0 && cd spin"
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi"
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
+	buildah run $${CONTAINER} sh -c "cargo install --locked --path ."
+	buildah run $${CONTAINER} sh -c 'spin --help'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 
@@ -98,7 +103,7 @@ golang:
 		--env GOARCH='amd64' \
 		--env GOOS='linux' \
 		--env GOCACHE='/tmp/gocache' $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache bash gcc go musl-dev'
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache go'
 	buildah run $${CONTAINER} sh -c 'wget -O go.tgz https://dl.google.com/go/$(GO_VER).src.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
 	buildah run $${CONTAINER} sh -c 'echo "$$(go env GOROOT)"'
 	buildah run $${CONTAINER} sh -c 'cd /usr/local/go/src && ./make.bash'
@@ -143,7 +148,7 @@ tbx:
 		--env PATH=/usr/local/cargo/bin:$$PATH \
 		--workingdir /home \
 		$${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
 	# install build-base so we can use make and build with neovim Mason
 	# build tools: python and pip
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache python3 py3-pip' &>/dev/null

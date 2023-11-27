@@ -83,7 +83,7 @@ rustup:
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
 	buildah run $${CONTAINER} sh -c "cargo binstall ripgrep"
 	buildah run $${CONTAINER} sh -c 'echo " --[[ CHECKS ]]--"'
-	buildoh run $${CONTAINER} sh -c 'which ripgrep'
+	buildah run $${CONTAINER} sh -c 'which ripgrep'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 golang:
@@ -122,6 +122,9 @@ neovim:
 
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## https://distrobox.it/posts/distrobox_custom/
+
+
+
 
 tbx:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))

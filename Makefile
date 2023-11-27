@@ -83,10 +83,12 @@ rustup:
 	echo '==================================================='
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	echo '==================================================='
+	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
 	# CLI utilities https://github.com/cargo-bins/cargo-binstall
 	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
-	buildah run $${CONTAINER} sh -c "/usr/local/cargo/bin/cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack wasmtime"
+	buildah run $${CONTAINER} sh -c "/usr/local/cargo/bin/cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack"
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	# buildah run $${CONTAINER} sh -c 'which rg'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)

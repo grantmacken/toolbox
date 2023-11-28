@@ -5,9 +5,7 @@ jobs:
   build_base:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # permissions:
-    #   contents: read
-    #   packages: write
+
     steps:
       - uses: actions/checkout@v4
       - name: Build Base Image
@@ -19,5 +17,5 @@ jobs:
       - name: Upload built artifact
         uses: actions/upload-artifact@v3.1.3
         with:
-          name: alpine build base container
+          name: build-base
           path: ./build-base.tar

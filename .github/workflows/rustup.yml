@@ -13,4 +13,6 @@ jobs:
       - name: Load Image
         run: |
           podman load --input build-base.tar
-          podman images
+          podman images --noheading --format "{{.Tag}}
+          make rustup
+          

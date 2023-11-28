@@ -19,3 +19,8 @@ jobs:
         with:
           name: build-base
           path: ./build-base.tar
+      - name: Upload env
+        uses: actions/upload-artifact@v3.1.3
+        with:
+          name: env
+          path: ./.env

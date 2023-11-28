@@ -79,7 +79,6 @@ rustup:
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
-
 rust_tooling:
 	CONTAINER=$$(buildah from localhost/rustup:$(ALPINE_VER))
 	# 'Add components for neovim LSP and formatter' 

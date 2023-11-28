@@ -1,28 +1,25 @@
 name: toolbox_builds
 on: push
 # on: workflow_dispatch
-env:
-  REGISTRY_USER: ${{ github.actor }}
-  REGISTRY_PASSWORD: ${{ github.token }}
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+# env:
+#   REGISTRY_USER: ${{ github.actor }}
+#   REGISTRY_PASSWORD: ${{ github.token }}
+#   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: redhat-actions/podman-login@v1
-        with:
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
-          registry: ${{ env.IMAGE_REGISTRY }}
-      - name: build base image
-        run: make version && make build-base
-      - name: build rustup
-        run: make rustup
+  build_base:
+    uses: ./.github/workflows/build-base.yml
+    #
+    # steps:
+    #   - uses: actions/checkout@v4
+    #   - uses: redhat-actions/podman-login@v1
+    #     with:
+    #       username: ${{ env.REGISTRY_USER }}
+    #       password: ${{ env.REGISTRY_PASSWORD }}
+    #       registry: ${{ env.IMAGE_REGISTRY }}
+    #   - name: build base image
+    #     run: make version && make build-base
+    #   - name: build rustup
+    #     run: make rustup
       # - name: spin
       #   run: make spin
       # - name: wasm
@@ -33,3 +30,7 @@ jobs:
       #   run: make neovim
       # - name: build and push tbx image
       #   run: make tbx
+      #
+ # permissions:
+    #   contents: read
+    #   packages: write

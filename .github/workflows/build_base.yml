@@ -5,9 +5,9 @@ jobs:
   build_base:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      contents: read
-      packages: write
+    # permissions:
+    #   contents: read
+    #   packages: write
     steps:
       - uses: actions/checkout@v4
       - name: Build Base Image

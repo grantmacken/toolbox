@@ -1,6 +1,10 @@
 name: toolbox_builds
 on: push
 # on: workflow_dispatch
+  permissions:
+     contents: read
+     packages: write
+#
 # env:
 #   REGISTRY_USER: ${{ github.actor }}
 #   REGISTRY_PASSWORD: ${{ github.token }}
@@ -8,6 +12,9 @@ on: push
 jobs:
   build_base:
     uses: ./.github/workflows/build_base.yml
+  # build_rustup:
+  #   needs: build_base
+  #   uses: ./.github/workflows/rustup.yml
     #
     # steps:
     #   - uses: actions/checkout@v4

@@ -31,8 +31,8 @@ build-base:
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base bash zip curl git tree' &>/dev/null
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-
+	buildah commit --rm $${CONTAINER} localhost/$@:$(ALPINE_VER)
+	podman save --quiet -o build-base.tar localhost/$@:$(ALPINE_VER)
 # libgcc
 # libstdc++
 # zstd-libs

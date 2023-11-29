@@ -6,9 +6,6 @@ jobs:
   rustup:
     needs: build_base
     uses: ./.github/workflows/rustup.yml
-  # rustup:
-  #   needs: build_base
-  #   uses: ./.github/workflows/rustup.yml
   # wasmtime:
   #   needs: build_base
   #   uses: ./.github/workflows/wasmtime.yml

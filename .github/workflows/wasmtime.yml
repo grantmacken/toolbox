@@ -1,3 +1,8 @@
+  
+name: rustup
+on: workflow_call
+# on: workflow_dispatch
+jobs:
   wasmtime:
     runs-on: ubuntu-latest
     timeout-minutes: 10

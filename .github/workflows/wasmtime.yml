@@ -1,0 +1,14 @@
+  wasmtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-base
+      - name: Load Image
+        run: |
+          podman load --input build-base.tar
+          VERSION=$(podman images --noheading --format "{{.Tag}}")
+	        sed -i "s/ALPINE_VER=.*/ALPINE_VER=${VERSION}/" .env
+	        make wasmtime

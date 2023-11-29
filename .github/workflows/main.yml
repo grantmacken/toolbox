@@ -3,6 +3,9 @@ on: push
 jobs:
   build_base:
     uses: ./.github/workflows/build_base.yml
+  rustup:
+    needs: build_base
+    uses: ./.github/workflows/rustup.yml
   # rustup:
   #   needs: build_base
   #   uses: ./.github/workflows/rustup.yml

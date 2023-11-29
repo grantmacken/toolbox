@@ -1,4 +1,3 @@
-  
 name: rustup
 on: workflow_call
 # on: workflow_dispatch
@@ -14,6 +13,4 @@ jobs:
       - name: Load Image
         run: |
           podman load --input build-base.tar
-          VERSION=$(podman images --noheading --format "{{.Tag}}")
-	        sed -i "s/ALPINE_VER=.*/ALPINE_VER=${VERSION}/" .env
 	        make wasmtime

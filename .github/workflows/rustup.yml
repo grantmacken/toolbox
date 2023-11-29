@@ -1,6 +1,6 @@
 name: rustup
 on: workflow_call
-# on: workflow_dispatch
+  # on: workflow_dispatch
 jobs:
   rustup:
     runs-on: ubuntu-latest
@@ -10,6 +10,8 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: build-base
+      - name: load image
+        run: podman load --input build-base.tar
       # - name: Load Image
       #   run: |
       #     podman load --input build-base.tar

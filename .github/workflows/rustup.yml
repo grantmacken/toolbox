@@ -10,9 +10,9 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: build-base
-      - name: Load Image
-        run: |
-          podman load --input build-base.tar
-          VERSION=$(podman images --noheading --format "{{.Tag}}")
-	        sed -i "s/ALPINE_VER=.*/ALPINE_VER=${VERSION}/" .env
-	        make rustup
+      # - name: Load Image
+      #   run: |
+      #     podman load --input build-base.tar
+      #     VERSION=$(podman images --noheading --format "{{.Tag}}")
+	     #    sed -i "s/ALPINE_VER=.*/ALPINE_VER=${VERSION}/" .env
+	     #    make rustup

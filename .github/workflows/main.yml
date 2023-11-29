@@ -2,10 +2,10 @@ name: toolbox_builds
 on: push
 jobs:
   build_base:
-    uses: ./.github/workflows/build_base.yml
+    uses: .github/workflows/build_base.yml
   rustup:
     needs: build_base
-    uses: ./.github/workflows/rustup.yml
+    uses: .github/workflows/rustup.yml
   # wasmtime:
   #   needs: build_base
   #   uses: ./.github/workflows/wasmtime.yml

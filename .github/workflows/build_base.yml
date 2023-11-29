@@ -1,4 +1,4 @@
-name: build_base
+name: rustup
 on: workflow_call
 # on: workflow_dispatch
 jobs:

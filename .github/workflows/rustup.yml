@@ -2,7 +2,7 @@ name: rustup
 on: workflow_call
 # on: workflow_dispatch
 jobs:
-  build_base:
+  rustup:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -13,6 +13,6 @@ jobs:
       - name: Load Image
         run: |
           podman load --input build-base.tar
-          podman images --noheading --format "{{.Tag}}
+          # podman images --noheading --format "{{.Tag}}"
           make rustup
           

@@ -102,8 +102,10 @@ rustup:
 
 spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c \
-		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
+	buildah run $${CONTAINER} sh -c 'curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash -s -- -v v$(SPIN_VER)'
+
+
+xxx:
 	buildah run $${CONTAINER} sh -c 'chmod +x /usr/local/spin/spin && ln -s -v /usr/local/spin/spin /usr/local/bin/spin' || true
 	buildah run $${CONTAINER} sh -c 'which spin' || true
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
@@ -115,8 +117,7 @@ spin:
 # podman run $${CONTAINER} sh -c 'spin plugins update' || true
 # podman run $${CONTAINER} sh -c 'spin plugins list --installed --verbose' || true
 
-#curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash -s -- -v v1.5.0
-
+#
 # https://github.com/uutils/coreutils
 # https://zaiste.net/posts/shell-commands-rust/
 # bat exa fd procs sd dust starship ripgrep tokei ytop 

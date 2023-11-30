@@ -104,15 +104,16 @@ spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c \
 		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
-	buildah run $${CONTAINER} sh -c 'chmod +x /usr/local/spin/spin && ln -s -v /usr/local/spin/spin /usr/local/bin/' || true
-	buildah run $${CONTAINER} sh -c 'which spin && spin -V' || true
+	buildah run $${CONTAINER} sh -c 'chmod +x /usr/local/spin/spin && ln -s -v /usr/local/spin/spin /usr/local/bin/spin' || true
+	buildah run $${CONTAINER} sh -c 'which spin' || true
+	buildah run $${CONTAINER} sh -c 'spin' || true
 	buildah run $${CONTAINER} sh -c 'spin --help' || true
-	buildah run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin'
-	buildah run $${CONTAINER} sh -c 'spin templates list --verbose'
-	buildah run $${CONTAINER} sh -c 'spin plugins update'
-	buildah run $${CONTAINER} sh -c 'spin plugins list --installed --verbose'
+	buildah run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin' || true
+	buildah run $${CONTAINER} sh -c 'spin templates list --verbose' || true
+	buildah run $${CONTAINER} sh -c 'spin plugins update' || true
+	buildah run $${CONTAINER} sh -c 'spin plugins list --installed --verbose' || true
 
-	#curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash -s -- -v v1.5.0
+#curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash -s -- -v v1.5.0
 
 # https://github.com/uutils/coreutils
 # https://zaiste.net/posts/shell-commands-rust/

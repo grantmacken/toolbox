@@ -81,16 +81,6 @@ rustup:
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi"
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
-	# Spin 
-	# https://github.com/fermyon/spin
-	CONTAINER=$$(buildah from localhost/rustup:$(ALPINE_VER))
-	buildah config --workingdir='/usr/local' $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v$(SPIN_VER) && cd spin'
-	buildah run $${CONTAINER} sh -c 'cargo install --locked --path .'
-	buildah run $${CONTAINER} sh -c 'spin --help'
-	buildah run $${CONTAINER} sh -c 'spin --version'
-	buildah run $${CONTAINER} sh -c 'which spin'
-	buildah run $${CONTAINER} sh -c 'tree /usr/local'
 	echo '==================================================='
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	echo '==================================================='
@@ -100,11 +90,22 @@ rustup:
 	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall' || true
 	buildah run $${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack"
-	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/' || true
 	buildah run $${CONTAINER} sh -c 'which rg'
+	# Spin https://github.com/fermyon/spin
+	buildah config --workingdir='/usr/local' $${CONTAINER}
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v$(SPIN_VER) && cd spin'
+	buildah run $${CONTAINER} sh -c 'cargo install --locked --path .'
+	buildah run $${CONTAINER} sh -c 'spin --help'
+	buildah run $${CONTAINER} sh -c 'spin --version'
+	buildah run $${CONTAINER} sh -c 'which spin'
+	buildah run $${CONTAINER} sh -c 'tree /usr/local'
+	buildah config --workingdir='/home' $${CONTAINER}
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
+# https://github.com/uutils/coreutils
+# https://zaiste.net/posts/shell-commands-rust/
+# bat exa fd procs sd dust starship ripgrep tokei ytop 
 
 wasmtime:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
@@ -114,10 +115,6 @@ wasmtime:
 	buildah run $${CONTAINER} sh -c "cat ~/.profile "
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	
-
-
-	
-
 golang:
 	echo 'Building $@ tooling'
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))

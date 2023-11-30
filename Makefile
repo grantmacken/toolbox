@@ -106,12 +106,14 @@ spin:
 		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
 	buildah run $${CONTAINER} sh -c 'chmod +x /usr/local/spin/spin && ln -s -v /usr/local/spin/spin /usr/local/bin/spin' || true
 	buildah run $${CONTAINER} sh -c 'which spin' || true
-	buildah run $${CONTAINER} sh -c 'spin' || true
-	buildah run $${CONTAINER} sh -c 'spin --help' || true
-	buildah run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin' || true
-	buildah run $${CONTAINER} sh -c 'spin templates list --verbose' || true
-	buildah run $${CONTAINER} sh -c 'spin plugins update' || true
-	buildah run $${CONTAINER} sh -c 'spin plugins list --installed --verbose' || true
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
+	podman run $${CONTAINER} spin || true
+	podman run $${CONTAINER} sh -c 'spin --help' || true
+# podman run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin' || true
+# podman run $${CONTAINER} sh -c 'spin templates list --verbose' || true
+# podman run $${CONTAINER} sh -c 'spin plugins update' || true
+# podman run $${CONTAINER} sh -c 'spin plugins list --installed --verbose' || true
 
 #curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash -s -- -v v1.5.0
 

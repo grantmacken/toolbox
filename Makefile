@@ -104,8 +104,8 @@ spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c \
 		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
-	buildah run $${CONTAINER} sh -c 'ln -s //usr/local/spin/spin /usr/local/bin/' || true
-	buildah run $${CONTAINER} sh -c 'which spin && spin -V' 
+	buildah run $${CONTAINER} sh -c 'chmod +x /usr/local/spin/spin && ln -s -v /usr/local/spin/spin /usr/local/bin/' || true
+	buildah run $${CONTAINER} sh -c 'which spin && spin -V' || true
 	buildah run $${CONTAINER} sh -c 'spin --help' || true
 	buildah run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin'
 	buildah run $${CONTAINER} sh -c 'spin templates list --verbose'

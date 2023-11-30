@@ -108,7 +108,7 @@ rustup:
 spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c \
-		'wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v2.0.1/spin-v2.0.1-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
+		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
 	buildah run $${CONTAINER} sh -c 'ln -s //usr/local/spin/spin /usr/local/bin/' || true
 	buildah run $${CONTAINER} sh -c 'which spin' 
 

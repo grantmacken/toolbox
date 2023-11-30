@@ -93,11 +93,9 @@ rustup:
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/' || true
 	buildah run $${CONTAINER} sh -c 'which rg'
 	# Spin https://github.com/fermyon/spin
-	buildah run $${CONTAINER} sh -c \
-		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
-	buildah run $${CONTAINER} sh -c 'ln -s //usr/local/spin/spin /usr/local/bin/' || true
-	buildah run $${CONTAINER} sh -c 'which spin && spin --version' 
-	buildah run $${CONTAINER} sh -c 'tree /usr/local'
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin && cd spin'
+	buildah run $${CONTAINER} sh -c 'cargo install --locked --path .' || true
+	buildah run $${CONTAINER} sh -c 'spin --help' 
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 spin:

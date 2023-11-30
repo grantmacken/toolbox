@@ -108,8 +108,8 @@ spin:
 	buildah run $${CONTAINER} sh -c 'which spin' || true
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
-	podman run $${CONTAINER} spin || true
-	podman run $${CONTAINER} sh -c 'spin --help' || true
+	podman run localhost/$@:$(ALPINE_VER) spin || true
+	podman run localhost/$@:$(ALPINE_VER) sh -c 'spin --help' || true
 # podman run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin' || true
 # podman run $${CONTAINER} sh -c 'spin templates list --verbose' || true
 # podman run $${CONTAINER} sh -c 'spin plugins update' || true

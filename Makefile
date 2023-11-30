@@ -93,26 +93,26 @@ rustup:
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/' || true
 	buildah run $${CONTAINER} sh -c 'which rg'
 	# Spin https://github.com/fermyon/spin
-	# 
-	buildah run $${CONTAINER} sh -c 'wget -O spin.tgz https://dl.google.com/go/$(GO_VER).src.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v$(SPIN_VER) && cd spin'
-	buildah run $${CONTAINER} sh -c 'cargo install --locked --path .'
-	buildah run $${CONTAINER} sh -c 'spin --help'
-	buildah run $${CONTAINER} sh -c 'spin --version'
-	buildah run $${CONTAINER} sh -c 'which spin'
+	buildah run $${CONTAINER} sh -c \
+		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
+	buildah run $${CONTAINER} sh -c 'ln -s //usr/local/spin/spin /usr/local/bin/' || true
+	buildah run $${CONTAINER} sh -c 'which spin && spin --version' 
 	buildah run $${CONTAINER} sh -c 'tree /usr/local'
-	buildah config --workingdir='/home' $${CONTAINER}
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-
 
 spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c \
 		'mkdir /usr/local/spin && wget -O spin.tgz https://github.com/fermyon/spin/releases/download/v$(SPIN_VER)/spin-v$(SPIN_VER)-linux-amd64.tar.gz && tar -C /usr/local/spin -xzf spin.tgz'
 	buildah run $${CONTAINER} sh -c 'ln -s //usr/local/spin/spin /usr/local/bin/' || true
-	buildah run $${CONTAINER} sh -c 'which spin' 
+	buildah run $${CONTAINER} sh -c 'which spin && spin -V' 
+	buildah run $${CONTAINER} sh -c 'spin --help' || true
+	buildah run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin'
+	buildah run $${CONTAINER} sh -c 'spin templates list --verbose'
+	buildah run $${CONTAINER} sh -c 'spin plugins update'
+	buildah run $${CONTAINER} sh -c 'spin plugins list --installed --verbose'
 
-
+	#curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash -s -- -v v1.5.0
 
 # https://github.com/uutils/coreutils
 # https://zaiste.net/posts/shell-commands-rust/
@@ -243,3 +243,9 @@ endif
 # zstd
 # wl-clipboard
 
+# buildah run $${CONTAINER} sh -c 'wget -O spin.tgz https://dl.google.com/go/$(GO_VER).src.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
+# buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v$(SPIN_VER) && cd spin'
+# buildah run $${CONTAINER} sh -c 'cargo install --locked --path .'
+# buildah run $${CONTAINER} sh -c 'spin --help'
+# buildah run $${CONTAINER} sh -c 'spin --version'
+# buildah run $${CONTAINER} sh -c 'which spin'

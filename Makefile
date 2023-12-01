@@ -84,23 +84,24 @@ rustup:
 	echo '==================================================='
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	echo '==================================================='
-	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
-	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
+	# Spin https://github.com/fermyon/spin
+
 	# CLI utilities https://github.com/cargo-bins/cargo-binstall
-	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall"
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall' || true
 	buildah run $${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack"
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/' || true
 	buildah run $${CONTAINER} sh -c 'which rg'
-	# Spin https://github.com/fermyon/spin
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin && cd spin'
-	buildah run $${CONTAINER} sh -c 'cargo install --locked --path .' || true
-	buildah run $${CONTAINER} sh -c 'spin --help' 
+	buildah run $${CONTAINER	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash -s -- -v v$(SPIN_VER)'
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin'
+	buildah run $${CONTAINER} sh -c 'cd spin && make build'
+	buildah run $${CONTAINER} sh -c './target/release/spin --help'
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 
 xxx:

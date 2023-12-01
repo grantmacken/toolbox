@@ -99,6 +99,7 @@ rustup:
 spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin'
+	buildah run $${CONTAINER} sh -c 'tree spin'
 	buildah run $${CONTAINER} sh -c 'cd spin && make build'
 	buildah run $${CONTAINER} sh -c './target/release/spin --help'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)

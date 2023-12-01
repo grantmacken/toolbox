@@ -85,7 +85,6 @@ rustup:
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
 	echo '==================================================='
 	# Spin https://github.com/fermyon/spin
-
 	# CLI utilities https://github.com/cargo-bins/cargo-binstall
 	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall"
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall' || true
@@ -98,6 +97,11 @@ rustup:
 
 spin:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo $${CONTAINER} 
+	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init "
+	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
+	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin'
 	buildah run $${CONTAINER} sh -c 'tree spin'
 	buildah run $${CONTAINER} sh -c 'cd spin && make build'

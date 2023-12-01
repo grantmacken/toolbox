@@ -105,7 +105,7 @@ spin:
 	# 'Add components for neovim LSP and formatter' 
 	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
 	# buildah run $${CONTAINER} sh -c "rustup target add x86_64-unknown-linux-musl"
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin' \
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin --branch v2.0.1' \
 	buildah run $${CONTAINER} sh -c "cd spin && rustup target add wasm32-wasi && rustup target add wasm32-unknown-unknown"
 	buildah run $${CONTAINER} sh -c 'cd spin && cargo install --locked --path .'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)

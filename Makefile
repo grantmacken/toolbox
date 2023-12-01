@@ -30,7 +30,7 @@ build-base:
 	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
 	# @see https://pkgs.alpinelinux.org/packages
 	buildah config --workingdir /home $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base pkgconfig bash zip curl git tree' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base openssl-dev bash zip curl git tree' &>/dev/null
 	buildah commit --rm $${CONTAINER} localhost/$@:$(ALPINE_VER)
 	podman save --quiet -o build-base.tar localhost/$@:$(ALPINE_VER)
 # libgcc
@@ -102,9 +102,10 @@ spin:
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+	buildah run $${CONTAINER} sh -c "rustup target add x86_64-unknown-linux-musl"
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin'
 	# buildah run $${CONTAINER} sh -c 'tree spin'
-	buildah run $${CONTAINER} sh -c 'cd spin && make build'
+	buildah run $${CONTAINER} sh -c 'cd spin && cargo build --release'
 	buildah run $${CONTAINER} sh -c './target/release/spin --help'
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 

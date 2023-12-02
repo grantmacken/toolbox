@@ -15,6 +15,15 @@ help: ## show this help
 	sort |
 	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+FEDORA_VER := 39
+
+fedora-toolbox:
+	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
+	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
+	echo '-----------------------------------------------'
+
+
+
 .PHONY: version
 version:
 	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
@@ -106,7 +115,7 @@ spin:
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	# 'Add components for neovim LSP and formatter' 
 	# buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
-	buildah run $${CONTAINER} sh -c 'rustc --print target-list'
+	# buildah run $${CONTAINER} sh -c 'rustc --print target-list'
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v2.0.1'
 	buildah config --workingdir /home/spin  --env RUSTFLAGS='-Ctarget-feature=-crt-static' $${CONTAINER}
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-wasi-preview1-threads && rustup target add wasm32-unknown-unknown"

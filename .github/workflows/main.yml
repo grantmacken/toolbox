@@ -14,9 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: build base image
-        run: make version && make build-base
-      - name: spin
-        run: make spin
+        run: make fedora-toolbox
+          # - name: build base image
+      #   run: make version && make build-base
+      # - name: spin
+      #   run: make spin
       # - name: build and push tbx image
       #   run: make tbx
       #      - uses: redhat-actions/podman-login@v1

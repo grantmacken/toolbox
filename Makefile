@@ -105,7 +105,7 @@ spin:
 	# 'Add components for neovim LSP and formatter' 
 	# buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
 	buildah run $${CONTAINER} sh -c 'cat /usr/local/cargo/env'
-	buildah run $${CONTAINER} sh -c 'source /usr/local/cargo/env'
+	buildah run $${CONTAINER} sh -c 'export PATH="/usr/local/cargo/bin:$$PATH"'
 	buildah run $${CONTAINER} sh -c 'rustc --print target-list'
 	# buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v2.0.1'
 	# buildah config --workingdir /home/spin $${CONTAINER}

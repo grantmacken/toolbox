@@ -43,7 +43,7 @@ rustup:
 		$${CONTAINER} 
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
-	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
+	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v2.0.1' &>/dev/null
 	buildah config --workingdir /home/spin $${CONTAINER}
@@ -172,12 +172,12 @@ xxx:
 # bat exa fd procs sd dust starship ripgrep tokei ytop 
 
 wasmtime:
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config --env WASMTIME_HOME=/usr/local/wasmtime $${CONTAINER} 
 	buildah run $${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
 	buildah run $${CONTAINER} sh -c "tree /usr/local/wasmtime"
 	buildah run $${CONTAINER} sh -c "cat ~/.profile "
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	
 golang:
 	echo 'Building $@ tooling'

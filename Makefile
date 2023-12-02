@@ -30,8 +30,8 @@ fedora:
 	echo '-----------------------------------------------'
 
 
-RUSTARCH := x86_64-unknown-linux-musl
-# x86_64-unknown-linux-gnu
+# RUSTARCH := x86_64-unknown-linux-musl
+RUSTARCH := x86_64-unknown-linux-gnu
 # RUSTUP_TAG @see https://github.com/rust-lang/rustup/tags
 
 rustup:

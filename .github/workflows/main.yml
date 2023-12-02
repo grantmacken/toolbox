@@ -17,15 +17,14 @@ jobs:
         run: make fedora
       # - name: spinning top
       #   run: make spin
-      - name: wasmtime
-        run: make wasmtime
-
+      # - name: wasmtime
+      #   run: make wasmtime
+      - name: neovim
+        run: make neovim
       # - name: add rust tooling
       #   run: make rustup
           # - name: build base image
       #   run: make version && make build-base
-      # - name: spin
-      #   run: make spin
       # - name: build and push tbx image
       #   run: make tbx
       #      - uses: redhat-actions/podman-login@v1

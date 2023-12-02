@@ -65,7 +65,6 @@ spin:
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'which spin' || true
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'spin --version' || true
 	podman run localhost/$@:$(FEDORA_VER)  sh -c 'spin --help' || true
-# podman run $${CONTAINER} sh -c 'spin templates install --git https://g
 
 wasmtime:
 	echo 'Building $@g'
@@ -78,18 +77,18 @@ wasmtime:
 	podman images
 	podman run localhost/$@:$(FEDORA_VER)  sh -c 'wasmtime --help' || true
 
-# neovim: 
-# 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
-# 	buildah run $${CONTAINER} sh -c 'dnf -y install  curl ' &>/dev/null
-# 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
-# 	# TODO install stuff from a checkhealth and Mason build tool required for LSP
-# 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-# 	podman images
-# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'which nvim'
-# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/share'
-# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/bin'
-# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/lib/nvim'
-# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
+neovim: 
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
+	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
+	# TODO install stuff from a checkhealth and Mason build tool required for LSP
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
+	podman images
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/share'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/bin'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/lib/nvim'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim'
 
 
 
@@ -177,16 +176,6 @@ xrustupx:
 #
 
 #buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-wasi-preview1-threads && rustup target add wasm32-unknown-unknown"
-
-
-
-xxx:
-ithub.com/fermyon/spin' || true
-# podman run $${CONTAINER} sh -c 'spin templates list --verbose' || true
-# podman run $${CONTAINER} sh -c 'spin plugins update' || true
-# podman run $${CONTAINER} sh -c 'spin plugins list --installed --verbose' || true
-
-#
 # https://github.com/uutils/coreutils
 # https://zaiste.net/posts/shell-commands-rust/
 # bat exa fd procs sd dust starship ripgrep tokei ytop 

@@ -25,7 +25,8 @@ fedora-toolbox:
 		--env CARGO_HOME=/usr/local/cargo \
 		$${CONTAINER} 
 	buildah run $${CONTAINER} sh -c 'dnf -y upgrade && dnf -y swap coreutils-single coreutils-full && dnf -y swap glibc-minimal-langpack glibc-all-langpacks' &>/dev/null
-		RUN dnf -y upgrade && \
+	buildah run $${CONTAINER} sh -c 'dnf clean all' &>/dev/null
+	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	echo '-----------------------------------------------'
 
 

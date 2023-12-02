@@ -19,18 +19,20 @@ FEDORA_VER := 39
 
 fedora:
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
-	buildah config \
-		--env RUSTUP_HOME=/usr/local/rustup \
-		--env CARGO_HOME=/usr/local/cargo \
-		$${CONTAINER} 
-	buildah run $${CONTAINER} sh -c 'rm /etc/rpm/macros.image-language-conf'
-	buildah run $${CONTAINER} sh -c "sed -i '/tsflags=nodocs/d' /etc/dnf/dnf.conf"
+	buildah run $${CONTAINER} sh -c 'rm /etc/rpm/macros.image-language-conf' &>/dev/null
+	buildah run $${CONTAINER} sh -c "sed -i '/tsflags=nodocs/d' /etc/dnf/dnf.conf" &>/dev/null
 	buildah run $${CONTAINER} sh -c 'dnf -y upgrade && dnf -y swap coreutils-single coreutils-full && dnf -y swap glibc-minimal-langpack glibc-all-langpacks' &>/dev/null
-	buildah run $${CONTAINER} sh -c 'dnf -y reinstall acl bash coreutils-common curl findutils gawk gnupg2 grep gzip libcap openssl p11-kit pam python3 rpm sed sudo systemd tar util-linux-core'
-	buildah run $${CONTAINER} sh -c 'dnf -y install bash-completion bc bzip2 diffutils dnf-plugins-core findutils flatpak-spawn fpaste git gnupg2 gnupg2-smime gvfs-client hostname iproute iputils keyutils krb5-libs less lsof man-db man-pages mesa-dri-drivers mesa-vulkan-drivers mtr nano-default-editor nss-mdns openssh-clients passwd pigz procps-ng rsync shadow-utils sudo tcpdump time traceroute tree unzip util-linux vte-profile vulkan-loader wget which whois words xorg-x11-xauth xz zip'
-	buildah run $${CONTAINER} sh -c 'dnf clean all'
+	buildah run $${CONTAINER} sh -c 'dnf -y reinstall acl bash coreutils-common curl findutils gawk gnupg2 grep gzip libcap openssl p11-kit pam python3 rpm sed sudo systemd tar util-linux-core' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'dnf -y install bash-completion bc bzip2 diffutils dnf-plugins-core findutils flatpak-spawn fpaste git gnupg2 gnupg2-smime gvfs-client hostname iproute iputils keyutils krb5-libs less lsof man-db man-pages mesa-dri-drivers mesa-vulkan-drivers mtr nano-default-editor nss-mdns openssh-clients passwd pigz procps-ng rsync shadow-utils sudo tcpdump time traceroute tree unzip util-linux vte-profile vulkan-loader wget which whois words xorg-x11-xauth xz zip' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'dnf clean all' &>/dev/null
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
+	podman images
 	echo '-----------------------------------------------'
+
+
+RUSTARCH := x86_64-unknown-linux-musl
+# x86_64-unknown-linux-gnu
+# RUSTUP_TAG @see https://github.com/rust-lang/rustup/tags
 
 rustup:
 	echo 'Building $@ tooling'
@@ -39,8 +41,6 @@ rustup:
 		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \
 		$${CONTAINER} 
-	# buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	# https://github.com/rust-lang/rustup/tags
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
@@ -96,7 +96,6 @@ build-base:
 # @see https://pkgs.alpinelinux.org/packages
 # @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile'
 
-#RUSTARCH := x86_64-unknown-linux-musl
 
 
 xrustupx:

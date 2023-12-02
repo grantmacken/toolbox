@@ -20,6 +20,12 @@ FEDORA_VER := 39
 fedora-toolbox:
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
+	buildah config \
+		--env RUSTUP_HOME=/usr/local/rustup \
+		--env CARGO_HOME=/usr/local/cargo \
+		$${CONTAINER} 
+	buildah run $${CONTAINER} sh -c 'dnf -y upgrade && dnf -y swap coreutils-single coreutils-full && dnf -y swap glibc-minimal-langpack glibc-all-langpacks' &>/dev/null
+		RUN dnf -y upgrade && \
 	echo '-----------------------------------------------'
 
 

@@ -56,8 +56,8 @@ spin:
 	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'mkdir -p /usr/local/spin'
 	buildah config --workingdir /usr/local/spin $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash'
-	buildah run $${CONTAINER} sh -c 'ls -al .'
+	buildah run $${CONTAINER} sh -c 'curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'pwd && ls -al .'
 	# buildah run $${CONTAINER} sh -c 'ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	podman images

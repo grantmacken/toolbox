@@ -30,6 +30,23 @@ fedora:
 	podman images
 	echo '-----------------------------------------------'
 
+neovim: 
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
+	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
+	# TODO install stuff from a checkhealth and Mason build tool required for LSP
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
+	podman images
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -al /usr/local' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/share' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/bin' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/lib' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim' || true
+	echo '-----------------------------------------------'
+
+
+
 # RUSTARCH := x86_64-unknown-linux-musl
 RUSTARCH := x86_64-unknown-linux-gnu
 # RUSTUP_TAG @see https://github.com/rust-lang/rustup/tags
@@ -51,9 +68,34 @@ rustup:
 	podman images
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'rustup --version && cargo --version && rustc --version'
 
+
+rust-tooling:
+	echo 'Building $@'
+	CONTAINER=$$(buildah from localhost/rustup:$(FEDORA_VER))
+	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
+	# 'Add components for neovim LSP and formatter' 
+	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi"
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
+	buildah run $${CONTAINER} sh -c "rustup show" # to compile our example Wasm/WASI files for testing
+
+xx:
+	echo '==================================================='
+	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
+	echo '==================================================='
+	# Spin https://github.com/fermyon/spin
+	# CLI utilities https://github.com/cargo-bins/cargo-binstall
+	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall"
+	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall' || true
+	buildah run $${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack"
+	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/' || true
+	buildah run $${CONTAINER} sh -c 'which rg'
+	buildah run $${CONTAINER	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
+	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+
 spin:
-	echo 'Building $@ cli'
-	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
+	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'mkdir -p /usr/local/spin'
 	buildah config --workingdir /usr/local/spin $${CONTAINER}
@@ -77,18 +119,6 @@ wasmtime:
 	podman images
 	podman run localhost/$@:$(FEDORA_VER)  sh -c 'wasmtime --help' || true
 
-neovim: 
-	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
-	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
-	# TODO install stuff from a checkhealth and Mason build tool required for LSP
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
-	podman images
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/share' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/bin' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/lib/nvim' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim' || true
 
 
 
@@ -137,40 +167,6 @@ build-base:
 # @see https://github.com/toolbx-images/images/blob/main/alpine/edge/Containerfile'
 
 
-
-xrustupx:
-	echo 'Building $@ tooling'
-	echo " - from alpine version: $(ALPINE_VER)"
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah config \
-		--env RUSTUP_HOME=/usr/local/rustup \
-		--env CARGO_HOME=/usr/local/cargo \
-		$${CONTAINER} 
-	# buildah run $${CONTAINER} sh -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-	# https://github.com/rust-lang/rustup/tags
-	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init "
-	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
-	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
-	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
-	buildah run $${CONTAINER} sh -c 'echo " --[[ CHECKS ]]--"'
-	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
-	# 'Add components for neovim LSP and formatter' 
-	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi"
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
-	echo '==================================================='
-	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
-	echo '==================================================='
-	# Spin https://github.com/fermyon/spin
-	# CLI utilities https://github.com/cargo-bins/cargo-binstall
-	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall"
-	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall' || true
-	buildah run $${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack"
-	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/' || true
-	buildah run $${CONTAINER} sh -c 'which rg'
-	buildah run $${CONTAINER	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
-	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 # https://doc.rust-lang.org/cargo/reference/environment-variables.html
 #

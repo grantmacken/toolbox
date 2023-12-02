@@ -19,7 +19,6 @@ FEDORA_VER := 39
 
 fedora-toolbox:
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
-	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	buildah config \
 		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \
@@ -27,7 +26,9 @@ fedora-toolbox:
 	buildah run $${CONTAINER} sh -c 'rm /etc/rpm/macros.image-language-conf'
 	buildah run $${CONTAINER} sh -c "sed -i '/tsflags=nodocs/d' /etc/dnf/dnf.conf"
 	buildah run $${CONTAINER} sh -c 'dnf -y upgrade && dnf -y swap coreutils-single coreutils-full && dnf -y swap glibc-minimal-langpack glibc-all-langpacks' &>/dev/null
-	buildah run $${CONTAINER} sh -c 'dnf clean all' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'dnf -y upgrade && dnf -y swap coreutils-single coreutils-full && dnf -y swap glibc-minimal-langpack glibc-all-langpacks' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'dnf -y reinstall acl bash coreutils-common curl findutils gawk gnupg2 grep gzip libcap openssl p11-kit pam python3 rpm sed sudo systemd tar util-linux-core'
+	buildah run $${CONTAINER} sh -c 'dnf clean all'
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	echo '-----------------------------------------------'
 

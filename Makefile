@@ -53,9 +53,12 @@ rustup:
 spin:
 	echo 'Building $@ cli'
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
+	buildah config --workingdir /home $${CONTAINER}
+	buildah run $${CONTAINER} sh -c 'mkdir -p /usr/local/spin'
+	buildah config --workingdir /usr/local/spin $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash'
-	buildah run $${CONTAINER} sh -c 'tree'
-	# buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+	buildah run $${CONTAINER} sh -c 'ls -al .'
+	# buildah run $${CONTAINER} sh -c 'ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	podman images
 

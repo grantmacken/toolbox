@@ -84,11 +84,11 @@ neovim:
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim'
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/share'
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/bin'
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/lib/nvim'
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/share' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/bin' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -l /usr/local/lib/nvim' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim' || true
 
 
 

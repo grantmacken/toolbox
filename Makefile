@@ -24,6 +24,7 @@ fedora:
 	buildah run $${CONTAINER} sh -c 'dnf -y upgrade && dnf -y swap coreutils-single coreutils-full && dnf -y swap glibc-minimal-langpack glibc-all-langpacks' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'dnf -y reinstall acl bash coreutils-common curl findutils gawk gnupg2 grep gzip libcap openssl p11-kit pam python3 rpm sed sudo systemd tar util-linux-core' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'dnf -y install bash-completion bc bzip2 diffutils dnf-plugins-core findutils flatpak-spawn fpaste git gnupg2 gnupg2-smime gvfs-client hostname iproute iputils keyutils krb5-libs less lsof man-db man-pages mesa-dri-drivers mesa-vulkan-drivers mtr nano-default-editor nss-mdns openssh-clients passwd pigz procps-ng rsync shadow-utils sudo tcpdump time traceroute tree unzip util-linux vte-profile vulkan-loader wget which whois words xorg-x11-xauth xz zip' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null ## for neovim
 	buildah run $${CONTAINER} sh -c 'dnf clean all' &>/dev/null
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	podman images
@@ -61,8 +62,10 @@ spin:
 	buildah run $${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	podman images
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'spin --version'
-
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'which spin' || true
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'spin --version' || true
+	podman run localhost/$@:$(FEDORA_VER)  sh -c 'spin --help' || true
+# podman run $${CONTAINER} sh -c 'spin templates install --git https://g
 
 wasmtime:
 	echo 'Building $@g'
@@ -73,6 +76,21 @@ wasmtime:
 	buildah run $${CONTAINER} sh -c "cat ~/.profile "
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
+	podman run localhost/$@:$(FEDORA_VER)  sh -c 'wasmtime --help' || true
+
+# neovim: 
+# 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
+# 	buildah run $${CONTAINER} sh -c 'dnf -y install  curl ' &>/dev/null
+# 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
+# 	# TODO install stuff from a checkhealth and Mason build tool required for LSP
+# 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+# 	podman images
+# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'which nvim'
+# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/share'
+# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/bin'
+# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/lib/nvim'
+# 	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
+
 
 
 .PHONY: version
@@ -157,23 +175,13 @@ xrustupx:
 
 # https://doc.rust-lang.org/cargo/reference/environment-variables.html
 #
- xspinx:
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v2.0.1' &>/dev/null
-	buildah config --workingdir /home/spin  --env RUSTFLAGS='-Ctarget-feature=-crt-static' $${CONTAINER}
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-wasi-preview1-threads && rustup target add wasm32-unknown-unknown"
-	buildah run $${CONTAINER} sh -c 'cargo install --locked --path .'
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
+
+#buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-wasi-preview1-threads && rustup target add wasm32-unknown-unknown"
+
 
 
 xxx:
-	buildah run $${CONTAINER} sh -c 'chmod +x /usr/local/spin/spin && ln -s -v /usr/local/spin/spin /usr/local/bin/spin' || true
-	buildah run $${CONTAINER} sh -c 'which spin' || true
-	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
-	podman run localhost/$@:$(ALPINE_VER) spin || true
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'spin --help' || true
-# podman run $${CONTAINER} sh -c 'spin templates install --git https://github.com/fermyon/spin' || true
+ithub.com/fermyon/spin' || true
 # podman run $${CONTAINER} sh -c 'spin templates list --verbose' || true
 # podman run $${CONTAINER} sh -c 'spin plugins update' || true
 # podman run $${CONTAINER} sh -c 'spin plugins list --installed --verbose' || true
@@ -204,20 +212,7 @@ golang:
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
 	# podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
 
-neovim: 
-	echo 'Building container localhost/fedora:$(FEDORA_VER)'
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache cmake coreutils gettext-tiny-dev' &>/dev/null
-	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
-	# TODO install stuff from a checkhealth and Mason build tool required for LSP
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-	buildah commit --rm --squash $${CONTAINER} $@:$(ALPINE_VER)
-	podman images
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'which nvim'
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/share'
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/bin'
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'ls -l /usr/local/lib/nvim'
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'ldd /usr/local/bin/nvim'
+
 
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## https://distrobox.it/posts/distrobox_custom/

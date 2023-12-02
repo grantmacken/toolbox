@@ -51,10 +51,22 @@ rustup:
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'rustup --version && cargo --version && rustc --version'
 
 spin:
-	echo 'Building $@ tooling'
+	echo 'Building $@ cli'
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash'
+	buildah run $${CONTAINER} sh -c 'tree'
+	# buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
+	podman images
+
+wasmtime:
+	echo 'Building $@g'
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
+	buildah config --env WASMTIME_HOME=/usr/local/wasmtime $${CONTAINER} 
+	buildah run $${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
+	buildah run $${CONTAINER} sh -c "tree /usr/local/wasmtime"
+	buildah run $${CONTAINER} sh -c "cat ~/.profile "
+	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
 
 
@@ -166,13 +178,7 @@ xxx:
 # https://zaiste.net/posts/shell-commands-rust/
 # bat exa fd procs sd dust starship ripgrep tokei ytop 
 
-wasmtime:
-	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
-	buildah config --env WASMTIME_HOME=/usr/local/wasmtime $${CONTAINER} 
-	buildah run $${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
-	buildah run $${CONTAINER} sh -c "tree /usr/local/wasmtime"
-	buildah run $${CONTAINER} sh -c "cat ~/.profile "
-	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
+
 	
 golang:
 	echo 'Building $@ tooling'

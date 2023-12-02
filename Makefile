@@ -29,7 +29,6 @@ fedora:
 	podman images
 	echo '-----------------------------------------------'
 
-
 # RUSTARCH := x86_64-unknown-linux-musl
 RUSTARCH := x86_64-unknown-linux-gnu
 # RUSTUP_TAG @see https://github.com/rust-lang/rustup/tags
@@ -44,15 +43,19 @@ rustup:
 	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init "
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)' &>/dev/null
+	# buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
+	# buildah run $${CONTAINER} sh -c 'rustc --print target-list'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v2.0.1' &>/dev/null
-	buildah config --workingdir /home/spin $${CONTAINER}
-	# rustup target add wasm32-wasi-preview1-threads 
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-unknown-unknown"
-	buildah run $${CONTAINER} sh -c 'cargo install --locked --path .'
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	podman images
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'rustup --version && cargo --version && rustc --version'
+
+spin:
+	echo 'Building $@ tooling'
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
+	buildah run $${CONTAINER} sh -c 'curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash'
+	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
+	podman images
 
 
 .PHONY: version
@@ -137,16 +140,8 @@ xrustupx:
 
 # https://doc.rust-lang.org/cargo/reference/environment-variables.html
 #
-spin:
+ xspinx:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah config --workingdir /home --env RUSTUP_HOME='/usr/local/rustup' --env CARGO_HOME='/usr/local/cargo'  $${CONTAINER} 
-	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init "
-	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
-	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)'
-	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
-	# 'Add components for neovim LSP and formatter' 
-	# buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
-	# buildah run $${CONTAINER} sh -c 'rustc --print target-list'
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/fermyon/spin -b v2.0.1' &>/dev/null
 	buildah config --workingdir /home/spin  --env RUSTFLAGS='-Ctarget-feature=-crt-static' $${CONTAINER}
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-wasi-preview1-threads && rustup target add wasm32-unknown-unknown"
@@ -181,7 +176,7 @@ wasmtime:
 	
 golang:
 	echo 'Building $@ tooling'
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config \
 		--env GOROOT_BOOTSTRAP='/usr/lib/go'\
 		--env GOAMD64='v1' \
@@ -194,12 +189,12 @@ golang:
 	buildah run $${CONTAINER} sh -c 'cd /usr/local/go/src && ./make.bash'
 	buildah run $${CONTAINER} sh -c 'rm -rf /usr/local/go/pkg/*/cmd /usr/local/go/pkg/bootstrap /usr/local/go/pkg/obj /usr/local/go/pkg/tool/*/api /usr/local/go/pkg/tool/*/go_bootstrap /usr/local/go/src/cmd/dist/dist "$$GOCACHE"'
 	# remove a few intermediate / bootstrapping files the official binary release tarballs do not contain
-	buildah commit --rm --squash $${CONTAINER} $@:$(ALPINE_VER)
-	podman run localhost/$@:$(ALPINE_VER) sh -c 'tree /usr/local'
+	buildah commit --rm --squash $${CONTAINER} $@:$(FEDORA_VER)
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
 	# podman run localhost/$@:$(ALPINE_VER) bin/sh -c 'ldd /usr/local/bin/go'
 
 neovim: 
-	echo 'Building container localhost/$@:$(ALPINE_VER)'
+	echo 'Building container localhost/fedora:$(FEDORA_VER)'
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
 	buildah run $${CONTAINER} sh -c 'apk add --no-cache cmake coreutils gettext-tiny-dev' &>/dev/null
 	# @see https://github.com/neovim/neovim/wiki/Building-Neovim

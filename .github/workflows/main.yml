@@ -21,6 +21,9 @@ jobs:
       #   run: make wasmtime
       - name: neovim
         run: make neovim
+      - name: golang
+            run: make golang
+
       # - name: add rust tooling
       #   run: make rustup
           # - name: build base image

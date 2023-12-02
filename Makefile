@@ -45,8 +45,6 @@ neovim:
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim' || true
 	echo '-----------------------------------------------'
 
-
-
 # RUSTARCH := x86_64-unknown-linux-musl
 RUSTARCH := x86_64-unknown-linux-gnu
 # RUSTUP_TAG @see https://github.com/rust-lang/rustup/tags
@@ -68,7 +66,6 @@ rustup:
 	podman images
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'rustup --version && cargo --version && rustc --version'
 
-
 rust-tooling:
 	echo 'Building $@'
 	CONTAINER=$$(buildah from localhost/rustup:$(FEDORA_VER))
@@ -79,6 +76,10 @@ rust-tooling:
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
 	buildah run $${CONTAINER} sh -c "rustup show" # to compile our example Wasm/WASI files for testing
 
+# https://github.com/uutils/coreutils
+# https://zaiste.net/posts/shell-commands-rust/
+# bat exa fd procs sd dust starship ripgrep tokei ytop 
+#
 xx:
 	echo '==================================================='
 	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
@@ -118,16 +119,6 @@ wasmtime:
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
 	podman run localhost/$@:$(FEDORA_VER)  sh -c 'wasmtime --help' || true
-
-
-
-
-.PHONY: version
-version:
-	VERSION=$$(podman run --rm docker.io/alpine:latest /bin/ash -c 'cat /etc/os-release' | grep -oP 'VERSION_ID=\K.+')
-	echo " - alpine version: $$VERSION"
-	sed -i "s/ALPINE_VER=.*/ALPINE_VER=$${VERSION}/" .env
-	echo '-----------------------------------------------'
 
 # DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
@@ -172,11 +163,6 @@ build-base:
 #
 
 #buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-wasi-preview1-threads && rustup target add wasm32-unknown-unknown"
-# https://github.com/uutils/coreutils
-# https://zaiste.net/posts/shell-commands-rust/
-# bat exa fd procs sd dust starship ripgrep tokei ytop 
-
-
 	
 golang:
 	echo 'Building $@ tooling'
@@ -199,9 +185,9 @@ tbx:
 	buildah run $${CONTAINER} sh -c 'echo $$PATH'
 	buildah config \
 		--label com.github.containers.toolbox="true" \
-		--label version="$(ALPINE_VER)" \
+		--label version="$(FEDORA_VER)" \
 		--label usage="Use with toolbox or distrobox command" \
-		--label summary="base dev toolbx alpine image" \
+		--label summary="base dev toolbx fedora image" \
 		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
 		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \

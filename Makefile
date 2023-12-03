@@ -162,6 +162,8 @@ golang:
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'which go && go version'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'go env'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'go help gopath'
 
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## https://distrobox.it/posts/distrobox_custom/

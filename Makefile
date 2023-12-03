@@ -206,12 +206,17 @@ tbx:
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
 	# buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
 	buildah commit --rm $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
-	buildah tag ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER) ghcr.io/$(REPO_OWNER)/$@:latest
+	buildah tag ghcr.io/$(REPO_OWNER)/$@:$(VERSION) ghcr.io/$(REPO_OWNER)/$@:latest
 	#buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
 	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) which nvim
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) nvim --version
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) printenv
+ifdef GITHUB_ACTIONS
+	buildah push ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
+	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
+endif
+	
 
 
 # ifdef GITHUB_ACTIONS
@@ -262,10 +267,6 @@ xxxxaa:
 	buildah run $${CONTAINER} sh -c "echo $$PATH"
 	buildah commit --rm $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
 	buildah tag ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER) ghcr.io/$(REPO_OWNER)/$@:latest
-ifdef GITHUB_ACTIONS
-	buildah push ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER)
-	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
-endif
 
 # btop
 # age

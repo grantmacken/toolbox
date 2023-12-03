@@ -170,8 +170,8 @@ golang:
 	buildah config --workingdir /usr/local/go $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'ls -al .'
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
 	podman images
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree .'
 
 
@@ -193,24 +193,24 @@ tbx:
 		--env WASMTIME_HOME=/usr/local/wasmtime \
 		--workingdir /home \
 		$${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
+	# buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
 	# install build-base so we can use make and build with neovim Mason
 	# build tools: python and pip
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache python3 py3-pip' &>/dev/null
+	# buildah run $${CONTAINER} sh -c 'apk add --no-cache python3 py3-pip' &>/dev/null
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
-	buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null
+	# buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null
 	# install node neovim provider
 	# @see https://pnpm.io/
 	# buildah run $${CONTAINER} wget -qO- https://get.pnpm.io/install.sh | ENV="$$HOME/.bashrc" SHELL="$$(which bash)" bash -
 	# install node neovim provider
 	# buildah run $${CONTAINER} sh -c 'pnpm install -g neovim'
 	# @ copy over neovim build
-	buildah  copy --from localhost/neovim:$(ALPINE_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
-	buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER} '/usr/local/lib' '/usr/local/lib'
-	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/rustup' '/usr/local/rustup'
-	buildah  copy --from localhost/rustup:$(ALPINE_VER)  $${CONTAINER} '/usr/local/cargo' '/usr/local/cargo'
+	buildah  copy --from localhost/neovim:$(FEDORA_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah  copy --from localhost/neovim:$(FEDORA_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
+	# buildah  copy --from localhost/neovim:$(ALPINE_VER)  $${CONTAINER} '/usr/local/lib' '/usr/local/lib'
+	buildah  copy --from localhost/rustup:$(FEDORA_VER)  $${CONTAINER} '/usr/local/rustup' '/usr/local/rustup'
+	buildah  copy --from localhost/rustup:$(FEDORA_VER)  $${CONTAINER} '/usr/local/cargo' '/usr/local/cargo'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'which cargo'
 	buildah  copy --from localhost/wasmtime:$(ALPINE_VER)  $${CONTAINER} '/usr/local/wasmtime' '/usr/local/wasmtime'

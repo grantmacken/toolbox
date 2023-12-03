@@ -22,6 +22,7 @@ jobs:
       - name: build
         run: |
           make wasmtime
+          make golang
       # - name: neovim
       #   run: make neovim
       # - name: golang

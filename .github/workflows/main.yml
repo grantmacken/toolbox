@@ -14,9 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: base container image
-        run: |
-          make fedora
-          make tbx
+        run: make fedora
+      - name: wasmtime
+        run: make wasmtime
+      - name: toolbox container image
+        run: make tbx
       # - name: rust tooling
       #   run: make rustup && make rust-tooling
       # - name: spinning top

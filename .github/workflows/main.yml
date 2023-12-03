@@ -13,7 +13,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - name: fedora base image
+      - name: base container image
         run: make fedora
       # - name: rust tooling
       #   run: make rustup && make rust-tooling
@@ -25,7 +25,6 @@ jobs:
       - name: pusher
         run: |
           make tbx
-  
           # make rustup
           #make wasmtime
           #make golang

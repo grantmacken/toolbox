@@ -180,21 +180,23 @@ tbx:
 		--env WASMTIME_HOME=/usr/local/wasmtime \
 		--workingdir /home \
 		$${CONTAINER}
-	##[[ NEOVIM ]]##
+	echo '##[[ NEOVIM ]]##'
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-	##[[ WASMTIME ]]##
+	echo '##[[ WASMTIME ]]##'
 	buildah  copy --from localhost/wasmtime:$(FEDORA_VER)  $${CONTAINER} '/usr/local/wasmtime' '/usr/local/wasmtime'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/wasmtime && ln -s /usr/local/wasmtime/bin/* /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'which wasmtime && wasmtime --version'
-	##[[ SPIN ]]##
+	echo '##[[ SPIN ]]##'
 	buildah  copy --from localhost/spin:$(FEDORA_VER)  $${CONTAINER} '/usr/local/spin' '/usr/local/spin'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/spin && ln -s /usr/local/spin/spin /usr/local/bin/'
+	buildah run $${CONTAINER} sh -c 'which spin && spin --version'
+	echo '##[[ sudo ]]##'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
 	# buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
-	#buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
+	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
 	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest

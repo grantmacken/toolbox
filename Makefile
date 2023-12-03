@@ -67,7 +67,6 @@ rustup:
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'rustup --version && cargo --version && rustc --version'
 
 rust-tooling:
-	echo 'Building $@'
 	CONTAINER=$$(buildah from localhost/rustup:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
 	# 'Add components for neovim LSP and formatter' 
@@ -75,24 +74,23 @@ rust-tooling:
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi"
 	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
 	buildah run $${CONTAINER} sh -c "rustup show" # to compile our example Wasm/WASI files for testing
+	buildah run $${CONTAINER} sh -c "cargo --version" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo --help" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
 
 # https://github.com/uutils/coreutils
 # https://zaiste.net/posts/shell-commands-rust/
 # bat exa fd procs sd dust starship ripgrep tokei ytop 
-#
-xx:
-	echo '==================================================='
-	buildah run $${CONTAINER} sh -c "ls /usr/local/cargo/bin"
-	echo '==================================================='
-	# Spin https://github.com/fermyon/spin
+
+cargo:
+	CONTAINER=$$(buildah from localhost/rustup:$(FEDORA_VER))
 	# CLI utilities https://github.com/cargo-bins/cargo-binstall
 	buildah run $${CONTAINER} sh -c "cargo install cargo-binstall"
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall' || true
 	buildah run $${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack"
 	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/' || true
 	buildah run $${CONTAINER} sh -c 'which rg'
-	buildah run $${CONTAINER	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
-	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 spin:
@@ -174,10 +172,8 @@ golang:
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree .'
 
-
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## https://distrobox.it/posts/distrobox_custom/
-
 
 tbx:
 	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))

@@ -180,19 +180,20 @@ tbx:
 		--env WASMTIME_HOME=/usr/local/wasmtime \
 		--workingdir /home \
 		$${CONTAINER}
-	buildah  copy --from localhost/neovim:$(FEDORA_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah  copy --from localhost/neovim:$(FEDORA_VER)  $${CONTAINER} '/usr/local/share/nvim' '/usr/local/share'
-	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
+	buildahbuildah run $${CONTAINER} sh -c   copy --from localhost/neovim:$(FEDORA_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah run $${CONTAINER} which nvim
+	# buildah  copy --from localhost/neovim:$(FEDORA_VER)  $${CONTAINER} '/usr/local/share/nvim' '/usr/local/share'
+	# buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
 	# buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
-	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
+	# buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
 	#buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
-	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
+	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim'
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'nvim --version'
+	podman run localhost/$@:$(FEDORA_VER) which nvim
+	podman run localhost/$@:$(FEDORA_VER) nvim --version
 
 
 xxxxaa:

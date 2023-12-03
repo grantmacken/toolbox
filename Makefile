@@ -180,7 +180,6 @@ tbx:
 		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \
 		--env WASMTIME_HOME=/usr/local/wasmtime \
-		--workingdir /home \
 		$${CONTAINER}
 	echo '##[[ NEOVIM ]]##'
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null

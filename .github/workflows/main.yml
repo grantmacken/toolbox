@@ -13,7 +13,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - name: build fedora base image
+      - name: fedora base image
         run: make fedora
       # - name: rust tooling
       #   run: make rustup && make rust-tooling

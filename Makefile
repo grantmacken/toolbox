@@ -96,7 +96,7 @@ xx:
 	buildah commit --rm $${CONTAINER} $@:$(ALPINE_VER)
 
 spin:
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config --workingdir /home $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'mkdir -p /usr/local/spin'
 	buildah config --workingdir /usr/local/spin $${CONTAINER}
@@ -114,8 +114,7 @@ wasmtime:
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config --env WASMTIME_HOME=/usr/local/wasmtime $${CONTAINER} 
 	buildah run $${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
-	buildah run $${CONTAINER} sh -c "tree /usr/local/wasmtime"
-	buildah run $${CONTAINER} sh -c "cat ~/.profile "
+	buildah run $${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/' || true
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
 	podman run localhost/$@:$(FEDORA_VER)  sh -c 'wasmtime --help' || true
@@ -187,7 +186,7 @@ tbx:
 		--label com.github.containers.toolbox="true" \
 		--label version="$(FEDORA_VER)" \
 		--label usage="Use with toolbox or distrobox command" \
-		--label summary="base dev toolbx fedora image" \
+		--label summary="wasi developer toolbx based on fedora image" \
 		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
 		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \

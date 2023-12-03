@@ -13,6 +13,12 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      - name: Log in to ghcr.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          registry: ${{ env.IMAGE_REGISTRY }} 
       - name: base fedora container image
         run: make fedora
       - name: golang
@@ -23,12 +29,11 @@ jobs:
         run: make spin
       - name: rustup
         run: make rustup
-      - uses: redhat-actions/podman-login@v1
-        with:
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
-          registry: ${{ env.IMAGE_REGISTRY }}
       - name: toolbox container image
         run: make tbx
       #   run: make tbx
-
+      # - uses: redhat-actions/podman-login@v1
+      #   with:
+      #     username: ${{ env.REGISTRY_USER }}
+      #     password: ${{ env.REGISTRY_PASSWORD }}
+      #     registry: ${{ env.IMAGE_REGISTRY }}

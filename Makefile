@@ -70,14 +70,14 @@ rust-tooling:
 	CONTAINER=$$(buildah from localhost/rustup:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'rustup --version && cargo --version && rustc --version'
 	# 'Add components for neovim LSP and formatter' 
-	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi"
-	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown" # to compile our example Wasm/WASI files for testing
+	buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer" &>/dev/null
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi" &>/dev/null
+	buildah run $${CONTAINER} sh -c "rustup target add wasm32-unknown-unknown"&>/dev/null # to compile our example Wasm/WASI files for testing
 	buildah run $${CONTAINER} sh -c "rustup show" # to compile our example Wasm/WASI files for testing
 	buildah run $${CONTAINER} sh -c "cargo --version" &>/dev/null
 	buildah run $${CONTAINER} sh -c "cargo --help" &>/dev/null
-	buildah run $${CONTAINER} sh -c "cargo install cargo-wasi" &>/dev/null
-	buildah run $${CONTAINER} sh -c "cargo wasi --version" &>/dev/null
+	buildah run $${CONTAINER} sh -c "cargo install -v cargo-wasi"
+	buildah run $${CONTAINER} sh -c "cargo wasi --version"
 
 # https://github.com/uutils/coreutils
 # https://zaiste.net/posts/shell-commands-rust/

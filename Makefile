@@ -180,11 +180,15 @@ tbx:
 		--env WASMTIME_HOME=/usr/local/wasmtime \
 		--workingdir /home \
 		$${CONTAINER}
+	##[[ NEOVIM ]]##
 	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-	# wasmtime
+	##[[ WASMTIME ]]##
 	buildah  copy --from localhost/wasmtime:$(FEDORA_VER)  $${CONTAINER} '/usr/local/wasmtime' '/usr/local/wasmtime'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/wasmtime && ln -s /usr/local/wasmtime/bin/* /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'which wasmtime && wasmtime --version'
+	##[[ SPIN ]]##
+	buildah  copy --from localhost/spin:$(FEDORA_VER)  $${CONTAINER} '/usr/local/spin' '/usr/local/spin'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/spin && ln -s /usr/local/spin/spin /usr/local/bin/'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
 	# buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	# Host Management

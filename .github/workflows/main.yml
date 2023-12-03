@@ -17,6 +17,8 @@ jobs:
         run: make fedora
       - name: wasmtime
         run: make wasmtime
+      - name: spin
+        run: make spin
       - name: toolbox container image
         run: make tbx
       # - name: rust tooling

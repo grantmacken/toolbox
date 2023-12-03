@@ -1,0 +1,37 @@
+name: toolbox_builds
+on: push
+# on: workflow_dispatch
+env:
+  REGISTRY_USER: ${{ github.actor }}
+  GITHUB_PASSWORD: ${{ github.token }}
+  GITHUB_REGISTRY: ghcr.io/${{ github.repository_owner }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # - name: Log in to quay.io
+      #   uses: redhat-actions/podman-login@v1
+      #   with:
+      #     username: ${{ env.REGISTRY_USER }}
+      #     password: ${{ env.GITHUB_PASSWORD }}
+      #     registry: quay.io
+      - name: Log in to ghcr.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.GITHUB_PASSWORD }}
+          registry: ${{ env.GITHUB_REGISTRY }} 
+      - name: build base
+        run: |
+          set -euxo pipefail
+          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
+          buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
+          echo 'NEOVIM'
+          buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
+          buildah commit --rm ${CONTAINER} localhost/neovim:${FEDORA_VER}
+          podman images

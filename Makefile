@@ -38,11 +38,11 @@ neovim:
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -al /usr/local' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/share' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/bin' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/lib' || true
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim' || true
+	# podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -al /usr/local' || true
+	# podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/share' || true
+	# podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/bin' || true
+	# podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/lib' || true
+	 podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim' || true
 	echo '-----------------------------------------------'
 
 # RUSTARCH := x86_64-unknown-linux-musl
@@ -120,15 +120,6 @@ wasmtime:
 
 # DEPENDENCIES := "bc bzip2 chpasswd curl diff find findmnt gpg hostname less lsof man mount passwd pigz pinentry ping ps rsync script ssh sudo time tree umount unzip useradd wc wget xauth zip"
 
-build-base:
-	echo 'Building $@'
-	echo ' - from alpine version: $(ALPINE_VER)'
-	CONTAINER=$$(buildah from docker.io/alpine:$(ALPINE_VER))
-	# @see https://pkgs.alpinelinux.org/packages
-	buildah config --workingdir /home $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'apk update && apk upgrade && apk add build-base openssl-dev bash zip curl git tree' &>/dev/null
-	buildah commit --rm $${CONTAINER} localhost/$@:$(ALPINE_VER)
-	# podman save --quiet -o build-base.tar localhost/$@:$(ALPINE_VER)
 # libgcc
 # libstdc++
 # zstd-libs
@@ -192,16 +183,14 @@ tbx:
 	buildah  copy --from localhost/neovim:$(FEDORA_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
 	buildah  copy --from localhost/neovim:$(FEDORA_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
-	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
+	# buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
 	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh'
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
 	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
-	buildah run $${CONTAINER} sh -c "echo $$PATH"
 	buildah commit --rm $@:$(FEDORA_VER)
 	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim'
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'nvim --version'
 

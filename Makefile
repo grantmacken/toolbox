@@ -212,11 +212,10 @@ tbx:
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) which nvim
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) nvim --version
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) printenv
-	
-# ifdef GITHUB_ACTIONS
-# 	buildah push ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
-# 	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
-# endif
+ifdef GITHUB_ACTIONS
+	podman push ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
+	podman push ghcr.io/$(REPO_OWNER)/$@:latest
+endif
 	
 
 xxxxaa:

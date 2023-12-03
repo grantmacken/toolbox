@@ -157,12 +157,11 @@ golang:
 	echo 'Building $@ tooling'
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
-	buildah config --workingdir /usr/local/go $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'ls -al .'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
+	buildah run $${CONTAINER} sh -c 'which go'
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	podman images
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree .'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'which go && go --version'
 
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## https://distrobox.it/posts/distrobox_custom/
@@ -171,8 +170,9 @@ tbx:
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config \
 		--label com.github.containers.toolbox="true" \
-		--label version="$(FEDORA_VER)" \
-		--label usage="Use with toolbox or distrobox command" \
+		--label com.redhat.component="$(NAME)" \ # ??
+		--label version="$(VERSION)" \
+		--label usage="This image is meant to be used with the toolbox command" \
 		--label summary="wasi developer toolbx based on fedora image" \
 		--label maintainer="Grant MacKenzie <grantmacken@gmail.com>" \
 		--env RUSTUP_HOME=/usr/local/rustup \
@@ -198,16 +198,22 @@ tbx:
 	echo '##[[ sudo ]]##'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
 	# buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
-	# Host Management
-	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
-	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
-	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
-	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
+	# buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
+	buildah commit --rm $${CONTAINER} ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
+	buildah tag ghcr.io/$(REPO_OWNER)/$@:$(ALPINE_VER) ghcr.io/$(REPO_OWNER)/$@:latest
+	#buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
 	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest
-	podman run localhost/$@:$(FEDORA_VER) which nvim
-	podman run localhost/$@:$(FEDORA_VER) nvim --version
+	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) which nvim
+	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) nvim --version
+	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) printenv
 
+
+# ifdef GITHUB_ACTIONS
+# 	buildah push ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
+# 	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
+# endif
+#
 
 xxxxaa:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null

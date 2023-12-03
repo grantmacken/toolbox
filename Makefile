@@ -164,7 +164,7 @@ build-base:
 golang:
 	echo 'Building $@ tooling'
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
-	buildah run $${CONTAINER} sh -c 'wget -O go.tgz https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz && tar -C /usr/local -xzf $(GO_VER).linux-amd64.tar.gz'
+	buildah run $${CONTAINER} sh -c 'wget -O go.tgz https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
 	buildah config --workingdir /usr/local/go $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'ls -al .'
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)

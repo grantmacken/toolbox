@@ -14,30 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: base container image
-        run: make fedora
+        run: |
+          make fedora
+          make tbx
       # - name: rust tooling
       #   run: make rustup && make rust-tooling
       # - name: spinning top
       #   run: make spin
-      - name: maker
-        run: |
-          make neovim
-      - name: pusher
-        run: |
-          make tbx
+      # - name: maker
+      #   run: |
+      #     make neovim
+          # make wasmtime
+          # make golang
           # make rustup
-          #make wasmtime
-          #make golang
-      # - name: neovim
-      #   run: make neovim
-      # - name: golang
-      #   run: make golang
-
-      # - name: add rust tooling
-      #   run: make rustup
-          # - name: build base image
-      #   run: make version && make build-base
-      # - name: build and push tbx image
+          # make spin
+      # - name: pusher
       #   run: make tbx
       #      - uses: redhat-actions/podman-login@v1
         # with:

@@ -172,7 +172,7 @@ tbx:
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config \
 		--label com.github.containers.toolbox="true" \
-		--label com.redhat.component="$(NAME)" \ # ??
+		--label com.redhat.component="$(NAME)" \
 		--label version="$(VERSION)" \
 		--label usage="This image is meant to be used with the toolbox command" \
 		--label summary="wasi developer toolbx based on fedora image" \

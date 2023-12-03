@@ -189,7 +189,7 @@ tbx:
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
 	#buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
-	buildah commit --rm $@:$(FEDORA_VER)
+	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim'
 	podman run localhost/$@:$(FEDORA_VER) sh -c 'nvim --version'

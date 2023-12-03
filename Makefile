@@ -212,18 +212,12 @@ tbx:
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) which nvim
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) nvim --version
 	podman run ghcr.io/$(REPO_OWNER)/$@:$(VERSION) printenv
-ifdef GITHUB_ACTIONS
-	buildah push ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
-	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
-endif
 	
-
-
 # ifdef GITHUB_ACTIONS
 # 	buildah push ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
 # 	buildah push ghcr.io/$(REPO_OWNER)/$@:latest
 # endif
-#
+	
 
 xxxxaa:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null

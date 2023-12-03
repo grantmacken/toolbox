@@ -17,14 +17,14 @@ jobs:
         run: make fedora
       - name: golang
         run: make golang
-      # - name: wasmtime
-      #   run: make wasmtime
-      # - name: spin
-      #   run: make spin
-      # - name: rustup
-      #   run: make rustup
-      # - name: toolbox container image
-      #   run: make tbx
+      - name: wasmtime
+        run: make wasmtime
+      - name: spin
+        run: make spin
+      - name: rustup
+        run: make rustup
+      - name: toolbox container image
+        run: make tbx
       #   run: make tbx
       #      - uses: redhat-actions/podman-login@v1
         # with:

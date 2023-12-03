@@ -196,7 +196,10 @@ tbx:
 	buildah  copy --from localhost/rustup:$(FEDORA_VER)  $${CONTAINER} '/usr/local/rustup' '/usr/local/rustup'
 	buildah  copy --from localhost/rustup:$(FEDORA_VER)  $${CONTAINER} '/usr/local/cargo' '/usr/local/cargo'
 	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
-	buildah run $${CONTAINER} sh -c 'which cargo && cargo --version '
+	buildah run $${CONTAINER} sh -c 'which cargo && cargo --version'
+	echo '##[[ GOLANG ]]##'
+	buildah  copy --from localhost/golang:$(FEDORA_VER)  $${CONTAINER} '/usr/local/go' '/usr/local/go'
+	buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
 	echo '##[[ sudo ]]##'
 	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
 	# buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'

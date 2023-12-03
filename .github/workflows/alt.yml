@@ -2,10 +2,10 @@ name: toolbox_builds
 on: push
 # on: workflow_dispatch
 env:
+  FEDORA_VER: '39'
   REPO_OWNER: ${{ github.actor }}
   GITHUB_PASSWORD: ${{ github.token }}
   GITHUB_REGISTRY: ghcr.io/${{ github.repository_owner }}
-  FEDORA_VERSION: '39'
 jobs:
   build:
     runs-on: ubuntu-latest

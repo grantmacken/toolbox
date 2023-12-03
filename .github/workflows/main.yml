@@ -19,11 +19,16 @@ jobs:
       #   run: make rustup && make rust-tooling
       # - name: spinning top
       #   run: make spin
-      - name: build
+      - name: maker
         run: |
-          make rustup
-          # make wasmtime
-          make golang
+          make neovim
+      - name: pusher
+        run: |
+          make tbx
+  
+          # make rustup
+          #make wasmtime
+          #make golang
       # - name: neovim
       #   run: make neovim
       # - name: golang

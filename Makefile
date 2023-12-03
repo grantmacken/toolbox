@@ -56,7 +56,7 @@ rustup:
 		--env RUSTUP_HOME=/usr/local/rustup \
 		--env CARGO_HOME=/usr/local/cargo \
 		$${CONTAINER} 
-	buildah run $${CONTAINER} sh -c "wget https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init "
+	buildah run $${CONTAINER} sh -c "wget -q https://static.rust-lang.org/rustup/archive/$(RUSTUP_TAG)/$(RUSTARCH)/rustup-init"
 	buildah run $${CONTAINER} sh -c "chmod +x rustup-init" || true
 	buildah run $${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain $(RUST_VER) --default-host $(RUSTARCH)' &>/dev/null
 	# buildah run $${CONTAINER} sh -c "rustup component add rustfmt clippy rust-analyzer"
@@ -78,6 +78,7 @@ rust-tooling:
 	buildah run $${CONTAINER} sh -c "cargo --help" &>/dev/null
 	buildah run $${CONTAINER} sh -c "cargo install -v cargo-wasi"
 	buildah run $${CONTAINER} sh -c "cargo wasi --version"
+	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 
 # https://github.com/uutils/coreutils
 # https://zaiste.net/posts/shell-commands-rust/
@@ -164,7 +165,7 @@ build-base:
 golang:
 	echo 'Building $@ tooling'
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
-	buildah run $${CONTAINER} sh -c 'wget -O go.tgz https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
+	buildah run $${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
 	buildah config --workingdir /usr/local/go $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'ls -al .'
 	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
@@ -176,8 +177,7 @@ golang:
 	## https://distrobox.it/posts/distrobox_custom/
 
 tbx:
-	CONTAINER=$$(buildah from localhost/build-base:$(ALPINE_VER))
-	buildah run $${CONTAINER} sh -c 'echo $$PATH'
+	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config \
 		--label com.github.containers.toolbox="true" \
 		--label version="$(FEDORA_VER)" \
@@ -189,6 +189,24 @@ tbx:
 		--env WASMTIME_HOME=/usr/local/wasmtime \
 		--workingdir /home \
 		$${CONTAINER}
+	buildah  copy --from localhost/neovim:$(FEDORA_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
+	buildah  copy --from localhost/neovim:$(FEDORA_VER)  $${CONTAINER} '/usr/local/share' '/usr/local/share'
+	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox'
+	buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
+	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh'
+	# Host Management
+	# distrobox-host-exec lets one execute command on the host, while inside of a container.
+	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
+	buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
+	buildah run $${CONTAINER} sh -c "echo $$PATH"
+	buildah commit --rm $@:$(FEDORA_VER)
+	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim'
+	podman run localhost/$@:$(FEDORA_VER) sh -c 'nvim --version'
+
+
+xxxxaa:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache alpine-base bash-completion bc bzip2 coreutils diffutils docs findutils gcompat gnupg iproute2 iputils keyutils less libcap man-pages mandoc musl-utils ncurses-terminfo net-tools openssh-client procps rsync shadow sudo tar tcpdump unzip util-linux wget which xz' &>/dev/null
 	# install build-base so we can use make and build with neovim Mason
 	# build tools: python and pip

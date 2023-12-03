@@ -15,14 +15,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: build fedora base image
         run: make fedora
-      - name: rust tooling
-        run: make rustup && make rust-tooling
+      # - name: rust tooling
+      #   run: make rustup && make rust-tooling
       # - name: spinning top
       #   run: make spin
-      # - name: wasmtime
-      #   run: make wasmtime
-      - name: neovim
-        run: make neovim
+      - name: build
+        run: |
+          make wasmtime
+      # - name: neovim
+      #   run: make neovim
       # - name: golang
       #   run: make golang
 

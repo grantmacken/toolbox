@@ -5,17 +5,7 @@ SHELL := /bin/bash
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --silent
-# https://github.com/toolbx-images/images/blob/main/alpine/edge/extra-packages
-
 include .env
-
-help: ## show this help	
-	@cat $(MAKEFILE_LIST) | 
-	grep -oP '^[a-zA-Z_-]+:.*?## .*$$' |
-	sort |
-	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-FEDORA_VER := 39
 
 fedora:
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
@@ -180,17 +170,16 @@ tbx:
 		--env WASMTIME_HOME=/usr/local/wasmtime \
 		--workingdir /home \
 		$${CONTAINER}
-	buildahbuildah run $${CONTAINER} sh -c   copy --from localhost/neovim:$(FEDORA_VER) $${CONTAINER} '/usr/local/bin/nvim' '/usr/local/bin'
-	buildah run $${CONTAINER} which nvim
+	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
 	# buildah  copy --from localhost/neovim:$(FEDORA_VER)  $${CONTAINER} '/usr/local/share/nvim' '/usr/local/share'
-	# buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
+	buildah run $${CONTAINER} sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/toolbox' || true
 	# buildah run $${CONTAINER} sh -c 'cp -v -p /etc/os-release /usr/lib/os-release'
-	# buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
 	# Host Management
 	# distrobox-host-exec lets one execute command on the host, while inside of a container.
 	# @see https://distrobox.it/useful_tips/#using-hosts-podman-or-docker-inside-a-distrobox
 	#buildah run $${CONTAINER} sh -c 'ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/podman && ln -fs /usr/bin/distrobox-host-exec /usr/local/bin/buildah'
-	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
+	buildah run $${CONTAINER} sh -c 'ln -fs /bin/sh /usr/bin/sh' || true
+	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
 	#buildah tag ghcr.io/$(REPO_OWNER)/$@:$(FEDORA_VER) ghcr.io/$(REPO_OWNER)/$@:latest
 	podman run localhost/$@:$(FEDORA_VER) which nvim
 	podman run localhost/$@:$(FEDORA_VER) nvim --version

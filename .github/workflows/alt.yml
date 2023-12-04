@@ -37,14 +37,14 @@ jobs:
           echo 'commit push neovim toolbox'
           buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
           podman push ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
-      - name: wasmtime
+      - name: build wasmtime
         run: |
           set -euxo pipefail
-          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
+          CONTAINER=$(buildah from ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER})
           echo 'WASMTIME'
-          buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
-	  buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
-	  buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-	  buildah run ${CONTAINER} sh -c 'wasmtime --help'
+          buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER}
+          buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
+          buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
+          buildah run ${CONTAINER} sh -c 'wasmtime --help'
           buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_wasmtime:${FEDORA_VER}
           podman images

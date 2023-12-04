@@ -2,6 +2,7 @@ name: toolbox_builds
 on: push
 # on: workflow_dispatch
 env:
+  VERSION: '1.0.1'
   FEDORA_VER: '39'
   GO_VER: 'go1.21.4'
   RUST_VER: '1.74.0'
@@ -28,7 +29,7 @@ jobs:
           set -euxo pipefail
           FEDORA_VER=${{ env.FEDORA_VER }}
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:${FEDORA_VER})
-          buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext musl-libc' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext musl-libc python3-pip' &>/dev/null
           buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
           echo 'NEOVIM'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
@@ -82,7 +83,7 @@ jobs:
           buildah run ${CONTAINER} sh -c 'which node && node --version'
           buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_js:${FEDORA_VER}
-      - name: cli build,  wasmtime and spin
+      - name: cl stuff
         run: |
           set -euxo pipefail
           FEDORA_VER=${{ env.FEDORA_VER }}
@@ -98,6 +99,8 @@ jobs:
           buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
           buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
+          echo 'CHEZMOI, git controlled dotfiles'
+          buildah run ${CONTAINER}  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin'
           ## FIN
           buildah commit --rm ${CONTAINER} localhost/tbx_cli:${FEDORA_VER}
           buildah tag  localhost/tbx_cli:${FEDORA_VER} ghcr.io/${{ env.REPO_OWNER }}/tbx:${FEDORA_VER}

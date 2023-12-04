@@ -52,5 +52,5 @@ jobs:
           buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
           buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
           buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
-          buildah run {CONTAINER} sh -c 'which spin && spin --version && spin/help'
+          buildah run {CONTAINER} sh -c 'which spin && spin --version && spin --help'
           podman images

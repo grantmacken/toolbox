@@ -70,9 +70,8 @@ jobs:
           buildah run ${CONTAINER} sh -c 'rustup target add wasm32-unknown-unknown' # &>/dev/null # to compile our example Wasm/WASI files for testing
           buildah run ${CONTAINER} sh -c 'rustup show' 
           buildah run ${CONTAINER} sh -c 'which cargo && cargo --version && cargo --help'
-          #buildah run ${CONTAINER} sh -c 'cargo install -v cargo-wasi'
-          #buildah run ${CONTAINER} sh -c 'cargo wasi --version'
-          # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
+          buildah run ${CONTAINER} sh -c 'cargo install -v cargo-wasi'
+          buildah run ${CONTAINER} sh -c 'cargo wasi --version'
       # - name: cli build,  wasmtime and spin
       #   run: |
       #     set -euxo pipefail

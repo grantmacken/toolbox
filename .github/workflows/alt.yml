@@ -66,9 +66,9 @@ jobs:
           buildah run ${CONTAINER} sh -c 'which cargo && cargo --version && cargo --help'
           buildah run ${CONTAINER} sh -c 'cargo install cargo-wasi' &>/dev/null
           buildah run ${CONTAINER} sh -c 'cargo wasi --version'
-          buildah run ${CONTAINER} sh -c "cargo install cargo-binstall"&>/dev/null
+          buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall'
-          buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just" &>/dev/null # wasm-pack tree-sitter-cli 
+          buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack" &>/dev/null # wasm-pack tree-sitter-cli 
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which rg && which just'
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_rust:${FEDORA_VER}
@@ -76,7 +76,7 @@ jobs:
         run: |
           set -euxo pipefail
           FEDORA_VER=${{ env.FEDORA_VER }}
-          CONTAINER=$(buildah from localhost/tbx_lang_rust:${FEDORA_VER}
+          CONTAINER=$(buildah from localhost/tbx_lang_rust:${FEDORA_VER})
           buildah run ${CONTAINER} sh -c 'dnf -y install nodejs' &>/dev/null
           buildah run ${CONTAINER} sh -c 'which node && node --version ' &>/dev/null
           buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null

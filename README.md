@@ -1,23 +1,20 @@
 # a toolbox container with cli tools for [wasi development](https://wasi.dev/)
 
-Our toolbox image built from the [community maintained toolbox container images repo](https://github.com/toolbx-images) 
+The toolbox image built from the [community maintained toolbox container images repo](https://github.com/toolbx-images) 
 The base image used is `quay.io/toolbx-images/fedora-toolbox:39`
 
-Buildah is used to kit out to our toolbox for terminal based [wasi development](https://wasi.dev/)
+Buildah is used to kit out to our toolbox for [wasi development](https://wasi.dev/)
 
 ## TOOLS
 
-
 Installed in this image is  the latest version of neovim 
 [built from source](https://github.com/neovim/neovim/wiki/Building-Neovim)
-For 
- Languages
+For Languages
 
- - [ ] rust
+ - [] rust
  - [ ] golang
  - [ ] grain
  - [ ] ocaml
- - [ ] assembly
 
 ## How to use
 

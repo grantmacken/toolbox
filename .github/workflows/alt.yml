@@ -25,7 +25,7 @@ jobs:
           username: ${{ env.REPO_OWNER }}
           password: ${{ env.GITHUB_PASSWORD }}
           registry: ${{ env.GITHUB_REGISTRY }} 
-      - name: build base
+      - name: build editor base
         run: |
           set -euxo pipefail
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
@@ -35,22 +35,23 @@ jobs:
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
           buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
           echo 'commit push neovim toolbox'
-          buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
+          buildah commit --rm ${CONTAINER} localhost/tbx_neovim:${FEDORA_VER}
+          buildah tag localhost/tbx_neovim:${FEDORA_VER} ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
           podman push ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
-      - name: build wasmtime and spin cli 
+      - name: cli build,  wasmtime and spin
         run: |
           set -euxo pipefail
-          CONTAINER=$(buildah from ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER})
+          CONTAINER=$(buildah from localhost/tbx_neovim:${FEDORA_VER})
           echo 'WASMTIME'
           buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER}
           buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
-          buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_wasmtime:${FEDORA_VER}
           echo 'SPIN'
           buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
           buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
           buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
           buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
-          buildah run {CONTAINER} sh -c 'which spin && spin --version && spin --help'
+          buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
+          buildah commit --rm ${CONTAINER} localhost/tbx_cli:${FEDORA_VER}
           podman images

@@ -62,9 +62,8 @@ jobs:
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:${FEDORA_VER})
           # 'RUSTUP'
           buildah run ${CONTAINER} sh -c 'cd /tmp && wget -q https://static.rust-lang.org/rustup/archive/${{ env.RUSTUP_TAG }}/${{ env.RUSTARCH }}/rustup-init'
-          buildah run ${CONTAINER} sh -c 'ls -al /tmp'
-          buildah run ${CONTAINER} sh -c 'ls .'
-          # buildah run ${CONTAINER} sh -c './rustup-init -y --no-modify-path --profile minimal --default-toolchain ${{ env.RUSTUP_VER }} --default-host ${{ env.RUSTARCH }}' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'cd /tmp && ./rustup-init -y --no-modify-path --profile minimal --default-toolchain ${{ env.RUST_VER }} --default-host ${{ env.RUSTARCH }}' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'rm /tmp/rustup-init' &>/dev/null
           # buildah run ${CONTAINER} sh -c 'rm rustup-init' &>/dev/null
           # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
       # - name: cli build,  wasmtime and spin

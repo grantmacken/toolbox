@@ -62,7 +62,8 @@ jobs:
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:${FEDORA_VER})
           buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
           buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
-          # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
+          buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+          buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
           # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
           # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
           #buildah run ${CONTAINER} sh -c 'cd /tmp && wget -q https://static.rust-lang.org/rustup/archive/${{ env.RUSTUP_TAG }}/${{ env.RUSTARCH }}/rustup-init'

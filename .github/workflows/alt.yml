@@ -48,6 +48,7 @@ jobs:
           buildah run ${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/${{ env.GO_VER }}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
           buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which go'
+          buildah run ${CONTAINER} sh -c 'which go'
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_go:${FEDORA_VER}
       - name: language build, rust
         run: |
@@ -68,7 +69,7 @@ jobs:
           buildah run ${CONTAINER} sh -c 'cargo wasi --version'
           buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall'
-          buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack" &>/dev/null # wasm-pack tree-sitter-cli 
+          buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack tree-sitter-cli" &>/dev/null # wasm-pack tree-sitter-cli 
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which rg && which just'
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_rust:${FEDORA_VER}
@@ -78,7 +79,7 @@ jobs:
           FEDORA_VER=${{ env.FEDORA_VER }}
           CONTAINER=$(buildah from localhost/tbx_lang_rust:${FEDORA_VER})
           buildah run ${CONTAINER} sh -c 'dnf -y install nodejs' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'which node && node --version ' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'which node && node --version'
           buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_js:${FEDORA_VER}
       - name: cli build,  wasmtime and spin

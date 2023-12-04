@@ -62,14 +62,16 @@ jobs:
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:${FEDORA_VER})
           buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
           buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
-          buildah run $${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+          buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+          buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' || true
+          buildah run ${CONTAINER} sh -c 'rustup show' 
+          buildah run ${CONTAINER} sh -c 'rustup component add rustfmt clippy rust-analyzer' # &>/dev/null
+          buildah run ${CONTAINER} sh -c 'rustup target add wasm32-wasi' # &>/dev/null
+          buildah run ${CONTAINER} sh -c 'rustup target add wasm32-unknown-unknown' # &>/dev/null # to compile our example Wasm/WASI files for testing
+          buildah run ${CONTAINER} sh -c 'rustup show' 
           buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
-          # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
-          # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
-          #buildah run ${CONTAINER} sh -c 'cd /tmp && wget -q https://static.rust-lang.org/rustup/archive/${{ env.RUSTUP_TAG }}/${{ env.RUSTARCH }}/rustup-init'
-          # buildah run ${CONTAINER} sh -c 'cd /tmp && ./rustup-init -y --no-modify-path --profile minimal --default-toolchain ${{ env.RUST_VER }} --default-host ${{ env.RUSTARCH }}' &>/dev/null
-          # buildah run ${CONTAINER} sh -c 'rm /tmp/rustup-init' &>/dev/null
-          # buildah run ${CONTAINER} sh -c 'rm rustup-init' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'cargo install -v cargo-wasi'
+          buildah run ${CONTAINER} sh -c 'cargo wasi --version'
           # buildah run ${CONTAINER} sh -c 'which cargo && cargo --version'
       # - name: cli build,  wasmtime and spin
       #   run: |

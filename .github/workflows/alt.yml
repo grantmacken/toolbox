@@ -37,7 +37,7 @@ jobs:
           echo 'commit push neovim toolbox'
           buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
           podman push ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
-      - name: build wasmtime
+      - name: build wasmtime and spin cli 
         run: |
           set -euxo pipefail
           CONTAINER=$(buildah from ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER})
@@ -45,6 +45,12 @@ jobs:
           buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER}
           buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-          buildah run ${CONTAINER} sh -c 'wasmtime --help'
+          buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
           buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_wasmtime:${FEDORA_VER}
+          echo 'SPIN'
+          buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
+          buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
+          buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
+          buildah run {CONTAINER} sh -c 'which spin && spin --version && spin/help'
           podman images

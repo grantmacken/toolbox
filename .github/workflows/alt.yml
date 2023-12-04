@@ -34,7 +34,17 @@ jobs:
           echo 'NEOVIM'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
           buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
+          echo 'commit push neovim toolbox'
           buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
           podman push ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:${FEDORA_VER}
-          # podman push ghcr.io/${{ env.REPO_OWNER }}/tbx_neovim:latest
+      - name: wasmtime
+        run: |
+          set -euxo pipefail
+          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
+          echo 'WASMTIME'
+          buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
+	  buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
+	  buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
+	  buildah run ${CONTAINER} sh -c 'wasmtime --help'
+          buildah commit --rm ${CONTAINER} ghcr.io/${{ env.REPO_OWNER }}/tbx_wasmtime:${FEDORA_VER}
           podman images

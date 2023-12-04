@@ -3,6 +3,9 @@ on: push
 # on: workflow_dispatch
 env:
   FEDORA_VER: '39'
+  GO_VER: 'go1.21.4'
+  RUST_VER: '1.74.0'
+  RUSTUP_TAG: '1.26.0'
   REPO_OWNER: ${{ github.actor }}
   GITHUB_PASSWORD: ${{ github.token }}
   GITHUB_REGISTRY: ghcr.io/${{ github.repository_owner }}
@@ -28,7 +31,8 @@ jobs:
       - name: build editor base
         run: |
           set -euxo pipefail
-          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
+          FEDORA_VER=${{ env.FEDORA_VER }}
+          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:${FEDORA_VER})
           buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
           buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
           echo 'NEOVIM'
@@ -41,6 +45,7 @@ jobs:
       - name: cli build,  wasmtime and spin
         run: |
           set -euxo pipefail
+          FEDORA_VER=${{ env.FEDORA_VER }}
           CONTAINER=$(buildah from localhost/tbx_neovim:${FEDORA_VER})
           echo 'WASMTIME'
           buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER}
@@ -58,7 +63,9 @@ jobs:
       - name: language build, golang
         run: |
           set -euxo pipefail
+          FEDORA_VER=${{ env.FEDORA_VER }}
+          GO_VER=${{ env.GO_VER }}
           CONTAINER=$(buildah from localhost/tbx_cli:${FEDORA_VER})
-          buildah run ${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/$(GO_VER).linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
+          buildah run ${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/${GO_VER}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz && rm go.tgz'
           buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which go'

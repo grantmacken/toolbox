@@ -49,65 +49,73 @@ jobs:
           buildah run ${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/${{ env.GO_VER }}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
           buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which go'
+          echo 'GH-CLI'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/cli/cli.git gh-cli'
           buildah run ${CONTAINER} sh -c 'cd gh-cli && make install prefix=/usr/local/gh'
-          buildah run ${CONTAINER} sh -c 'tree /usr/local/gh' || true
+          buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/gh && ln -s /usr/local/gh/bin/* /usr/local/bin/'
+          buildah run ${CONTAINER} sh -c 'rm -fR gh-cli' || true
+          echo 'COSIGN'
+          buildah run ${CONTAINER} sh -c 'go env GOPATH'
+          buildah run ${CONTAINER} sh -c 'git clone https://github.com/sigstore/cosign'
+          buildah run ${CONTAINER} sh -c 'cd cosign && go install ./cmd/cosign'
+          buildah run ${CONTAINER} sh -c '$(go env GOPATH)/bin/cosign'
+          buildah run ${CONTAINER} sh -c 'rm -fR cosign' || true
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_go:${FEDORA_VER}
-      - name: language build, rust
-        run: |
-          set -euxo pipefail
-          FEDORA_VER=${{ env.FEDORA_VER }}
-          CONTAINER=$(buildah from localhost/tbx_lang_go:${FEDORA_VER})
-          buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
-          buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
-          buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
-          buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' 
-          buildah run ${CONTAINER} sh -c 'rustup show' 
-          buildah run ${CONTAINER} sh -c 'rustup component add rust-analyzer'  &>/dev/null
-          buildah run ${CONTAINER} sh -c 'rustup target add wasm32-wasi'  &>/dev/null
-          buildah run ${CONTAINER} sh -c 'rustup target add wasm32-unknown-unknown'  &>/dev/null # to compile our example Wasm/WASI files for testing
-          buildah run ${CONTAINER} sh -c 'rustup show' 
-          buildah run ${CONTAINER} sh -c 'which cargo && cargo --version && cargo --help'
-          buildah run ${CONTAINER} sh -c 'cargo install cargo-wasi' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'cargo wasi --version'
-          buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
-          buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall'
-          buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack tree-sitter-cli" &>/dev/null # wasm-pack tree-sitter-cli 
-          buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
-          buildah run ${CONTAINER} sh -c 'which rg && which just'
-          buildah commit --rm ${CONTAINER} localhost/tbx_lang_rust:${FEDORA_VER}
-      - name: language build, nodejs typescript
-        run: |
-          set -euxo pipefail
-          FEDORA_VER=${{ env.FEDORA_VER }}
-          CONTAINER=$(buildah from localhost/tbx_lang_rust:${FEDORA_VER})
-          buildah run ${CONTAINER} sh -c 'dnf -y install nodejs' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'which node && node --version'
-          buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
-          buildah commit --rm ${CONTAINER} localhost/tbx_lang_js:${FEDORA_VER}
-      - name: cl stuff
-        run: |
-          set -euxo pipefail
-          FEDORA_VER=${{ env.FEDORA_VER }}
-          CONTAINER=$(buildah from localhost/tbx_lang_js:${FEDORA_VER})
-          echo 'WASMTIME'
-          buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER}
-          buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
-          buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-          buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
-          echo 'SPIN'
-          buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
-          buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
-          buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
-          buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
-          echo 'CHEZMOI, git controlled dotfiles'
-          buildah run ${CONTAINER}  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
-          echo 'CLIPBOARD'
-          # 'curl -sSL https://github.com/Slackadays/Clipboard/raw/main/install.sh | sh'
-          echo 'GITHUB-CLI'
-          ## FIN
-          buildah commit --rm ${CONTAINER} localhost/tbx_cli:${FEDORA_VER}
-          buildah tag  localhost/tbx_cli:${FEDORA_VER} ghcr.io/${{ env.REPO_OWNER }}/tbx:${FEDORA_VER}
-          podman push ghcr.io/${{ env.REPO_OWNER }}/tbx:${FEDORA_VER}
-          podman images
+      # - name: language build, rust
+      #   run: |
+      #     set -euxo pipefail
+      #     FEDORA_VER=${{ env.FEDORA_VER }}
+      #     CONTAINER=$(buildah from localhost/tbx_lang_go:${FEDORA_VER})
+      #     buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
+      #     buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
+      #     buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+      #     buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' 
+      #     buildah run ${CONTAINER} sh -c 'rustup show' 
+      #     buildah run ${CONTAINER} sh -c 'rustup component add rust-analyzer'  &>/dev/null
+      #     buildah run ${CONTAINER} sh -c 'rustup target add wasm32-wasi'  &>/dev/null
+      #     buildah run ${CONTAINER} sh -c 'rustup target add wasm32-unknown-unknown'  &>/dev/null # to compile our example Wasm/WASI files for testing
+      #     buildah run ${CONTAINER} sh -c 'rustup show' 
+      #     buildah run ${CONTAINER} sh -c 'which cargo && cargo --version && cargo --help'
+      #     buildah run ${CONTAINER} sh -c 'cargo install cargo-wasi' &>/dev/null
+      #     buildah run ${CONTAINER} sh -c 'cargo wasi --version'
+      #     buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
+      #     buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall'
+      #     buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack tree-sitter-cli" &>/dev/null # wasm-pack tree-sitter-cli 
+      #     buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
+      #     buildah run ${CONTAINER} sh -c 'which rg && which just'
+      #     buildah commit --rm ${CONTAINER} localhost/tbx_lang_rust:${FEDORA_VER}
+      # - name: language build, nodejs typescript
+      #   run: |
+      #     set -euxo pipefail
+      #     FEDORA_VER=${{ env.FEDORA_VER }}
+      #     CONTAINER=$(buildah from localhost/tbx_lang_rust:${FEDORA_VER})
+      #     buildah run ${CONTAINER} sh -c 'dnf -y install nodejs' &>/dev/null
+      #     buildah run ${CONTAINER} sh -c 'which node && node --version'
+      #     buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
+      #     buildah commit --rm ${CONTAINER} localhost/tbx_lang_js:${FEDORA_VER}
+      # - name: cl stuff
+      #   run: |
+      #     set -euxo pipefail
+      #     FEDORA_VER=${{ env.FEDORA_VER }}
+      #     CONTAINER=$(buildah from localhost/tbx_lang_js:${FEDORA_VER})
+      #     echo 'WASMTIME'
+      #     buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER}
+      #     buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash"
+      #     buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
+      #     buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
+      #     echo 'SPIN'
+      #     buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
+      #     buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
+      #     buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
+      #     buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
+      #     buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
+      #     echo 'CHEZMOI, git controlled dotfiles'
+      #     buildah run ${CONTAINER}  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
+      #     echo 'CLIPBOARD'
+      #     # 'curl -sSL https://github.com/Slackadays/Clipboard/raw/main/install.sh | sh'
+      #     echo 'GITHUB-CLI'
+      #     ## FIN
+      #     buildah commit --rm ${CONTAINER} localhost/tbx_cli:${FEDORA_VER}
+      #     buildah tag  localhost/tbx_cli:${FEDORA_VER} ghcr.io/${{ env.REPO_OWNER }}/tbx:${FEDORA_VER}
+      #     podman push ghcr.io/${{ env.REPO_OWNER }}/tbx:${FEDORA_VER}
+      #     podman images

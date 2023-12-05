@@ -97,7 +97,7 @@ jobs:
           # https://github.com/uutils/coreutils
           # https://zaiste.net/posts/shell-commands-rust/
           # bat exa fd procs sd dust starship ripgrep tokei ytop rip
-          buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks bat broot exa fd just ripgrep sd stylua tree-sitter-cli wasm-pack " &>/dev/null # wasm-pack tree-sitter-cli 
+          buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks bat broot choose exa fd just ripgrep sd stylua tree-sitter-cli wasm-pack zoxide" &>/dev/null # 
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which rg && which just'
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_rust:${FEDORA_VER}

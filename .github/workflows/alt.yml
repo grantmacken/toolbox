@@ -26,7 +26,7 @@ jobs:
       #     registry: ${{ env.GITHUB_REGISTRY }} 
       - name: build
         run: |
-          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39) >> "$GITHUB_ENV"
+          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
           echo  ${CONTAINER}
           buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext python3-pip age' &>/dev/null
           buildah run ${CONTAINER} sh -c 'dnf clean all' &>/dev/null

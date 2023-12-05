@@ -63,8 +63,8 @@ jobs:
           buildah run ${CONTAINER} sh -c 'rm -fR cosign' || true
           echo 'CHEZMOI'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/twpayne/chezmoi.git'
-          buildah run ${CONTAINER} sh -c 'cd chezmoi && make install-from-git-working-copy'
-          buildah run ${CONTAINER} sh -c 'which chezmoi'
+          buildah run ${CONTAINER} sh -c 'cd chezmoi && PREFIX=/usr/local; make install-from-git-working-copy'
+          buildah run ${CONTAINER} sh -c 'ls -al /usr/local'
           buildah run ${CONTAINER} sh -c 'rm -fR chezmoi' || true
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_go:${FEDORA_VER}
       # - name: language build, rust

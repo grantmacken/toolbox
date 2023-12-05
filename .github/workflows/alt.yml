@@ -29,7 +29,7 @@ jobs:
           set -euxo pipefail
           FEDORA_VER=${{ env.FEDORA_VER }}
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:${FEDORA_VER})
-          buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext musl-libc python3-pip' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext python3-pip age' &>/dev/null
           buildah run ${CONTAINER} sh -c 'dnf clean all'&>/dev/null
           echo 'NEOVIM'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
@@ -61,12 +61,12 @@ jobs:
           buildah run ${CONTAINER} sh -c 'mv $(go env GOPATH)/bin/cosign /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which cosign && cosign'
           buildah run ${CONTAINER} sh -c 'rm -fR cosign' || true
-          buildah commit --rm ${CONTAINER} localhost/tbx_lang_go:${FEDORA_VER}
           echo 'CHEZMOI'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/twpayne/chezmoi.git'
           buildah run ${CONTAINER} sh -c 'cd chezmoi && make install-from-git-working-copy'
           buildah run ${CONTAINER} sh -c 'which chezmoi'
           buildah run ${CONTAINER} sh -c 'rm -fR chezmoi' || true
+          buildah commit --rm ${CONTAINER} localhost/tbx_lang_go:${FEDORA_VER}
       # - name: language build, rust
       #   run: |
       #     set -euxo pipefail
@@ -86,7 +86,7 @@ jobs:
       #     buildah run ${CONTAINER} sh -c 'cargo wasi --version'
       #     buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
       #     buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall'
-      #     buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks ripgrep stylua just wasm-pack tree-sitter-cli" &>/dev/null # wasm-pack tree-sitter-cli 
+      #     buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks bat ripgrep stylua just wasm-pack tree-sitter-cli" &>/dev/null # wasm-pack tree-sitter-cli 
       #     buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
       #     buildah run ${CONTAINER} sh -c 'which rg && which just'
       #     buildah commit --rm ${CONTAINER} localhost/tbx_lang_rust:${FEDORA_VER}

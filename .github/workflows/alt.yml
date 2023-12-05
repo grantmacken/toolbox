@@ -64,7 +64,8 @@ jobs:
           echo 'CHEZMOI'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/twpayne/chezmoi.git'
           buildah run ${CONTAINER} sh -c 'cd chezmoi && PREFIX=/usr/local; make install-from-git-working-copy'
-          buildah run ${CONTAINER} sh -c 'ls -al /usr/local'
+          buildah run ${CONTAINER} sh -c 'tree $(go env GOPATH)'
+          buildah run ${CONTAINER} sh -c 'ls -al /usr/local/bin'
           buildah run ${CONTAINER} sh -c 'rm -fR chezmoi' || true
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_go:${FEDORA_VER}
       # - name: language build, rust
@@ -86,6 +87,7 @@ jobs:
       #     buildah run ${CONTAINER} sh -c 'cargo wasi --version'
       #     buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
       #     buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/cargo-binstall /usr/local/bin/cargo-binstall'
+      #     # TODO more boxkit: atuin 
       #     buildah run ${CONTAINER} sh -c "cargo-binstall --no-confirm --no-symlinks bat ripgrep stylua just wasm-pack tree-sitter-cli" &>/dev/null # wasm-pack tree-sitter-cli 
       #     buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
       #     buildah run ${CONTAINER} sh -c 'which rg && which just'

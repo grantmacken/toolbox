@@ -51,14 +51,15 @@ jobs:
           buildah run ${CONTAINER} sh -c 'which go'
           echo 'GH-CLI'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/cli/cli.git gh-cli'
-          buildah run ${CONTAINER} sh -c 'cd gh-cli && make install prefix=/usr/local/gh'
+          buildah run ${CONTAINER} sh -c 'cd gh-cli && make install prefix=/usr/local/gh' &/dev/null
           buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/gh && ln -s /usr/local/gh/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'rm -fR gh-cli' || true
           echo 'COSIGN'
           buildah run ${CONTAINER} sh -c 'go env GOPATH'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/sigstore/cosign'
-          buildah run ${CONTAINER} sh -c 'cd cosign && go install ./cmd/cosign'
-          buildah run ${CONTAINER} sh -c '$(go env GOPATH)/bin/cosign'
+          buildah run ${CONTAINER} sh -c 'cd cosign && go install ./cmd/cosign' &/dev/null
+          buildah run ${CONTAINER} sh -c 'mv $(go env GOPATH)/bin/cosign /usr/local/bin/'
+          buildah run ${CONTAINER} sh -c 'which cosign && cosign'
           buildah run ${CONTAINER} sh -c 'rm -fR cosign' || true
           buildah commit --rm ${CONTAINER} localhost/tbx_lang_go:${FEDORA_VER}
       # - name: language build, rust
@@ -110,6 +111,7 @@ jobs:
       #     buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
       #     buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
       #     echo 'CHEZMOI, git controlled dotfiles'
+      #     buildah run ${CONTAINER} sh -c 'dnf -y install age' &>/dev/null
       #     buildah run ${CONTAINER}  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
       #     echo 'CLIPBOARD'
       #     # 'curl -sSL https://github.com/Slackadays/Clipboard/raw/main/install.sh | sh'

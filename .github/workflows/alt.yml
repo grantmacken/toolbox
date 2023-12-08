@@ -67,7 +67,6 @@ jobs:
           echo 'RUSTUP'
           buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
           buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
-          buildah run ${CONTAINER} sh -c 'rustup component add rustfmt clippy rust-analyzer' &>/dev/null
           buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' 
           buildah run ${CONTAINER} sh -c 'which rustfmt && rustfmt --version'  # Formatter

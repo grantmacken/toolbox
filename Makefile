@@ -80,9 +80,6 @@ rust-tooling:
 	buildah run $${CONTAINER} sh -c "cargo wasi --version"
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
 
-# https://github.com/uutils/coreutils
-# https://zaiste.net/posts/shell-commands-rust/
-# bat exa fd procs sd dust starship ripgrep tokei ytop 
 
 cargo:
 	CONTAINER=$$(buildah from localhost/rustup:$(FEDORA_VER))
@@ -224,7 +221,11 @@ xxxxaa:
 	# buildah run $${CONTAINER} sh -c 'apk add --no-cache python3 py3-pip' &>/dev/null
 	# @see https://github.com/ublue-os/boxkit
 	# install some boxkit suggested apk packages 
-	# buildah run $${CONTAINER} sh -c 'apk add --no-cache btop age atuin bat chezmoi clipboard cosign dbus-x11 github-cli grep ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' &>/dev/null
+	# 
+	# buildah run $${CONTAINER} sh -c 'apk add --no-cache 
+	# btop age atuin bat chezmoi clipboard cosign dbus-x11 
+	# github-cli grep ncurses plocate ripgrep gzip tzdata zstd wl-clipboard' 
+	# &>/dev/null
 	# install node neovim provider
 	# @see https://pnpm.io/
 	# buildah run $${CONTAINER} wget -qO- https://get.pnpm.io/install.sh | ENV="$$HOME/.bashrc" SHELL="$$(which bash)" bash -

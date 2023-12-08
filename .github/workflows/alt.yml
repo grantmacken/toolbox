@@ -43,7 +43,6 @@ jobs:
           buildah run ${CONTAINER} sh -c 'which gh && gh --version && gh --help'
           buildah run ${CONTAINER} sh -c 'rm -fR gh-cli' || true
           echo 'COSIGN'
-          buildah run ${CONTAINER} sh -c 'go env GOPATH'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/sigstore/cosign'
           buildah run ${CONTAINER} sh -c 'cd cosign && go install ./cmd/cosign' &>/dev/null
           buildah run ${CONTAINER} sh -c 'ln -s $(go env GOPATH)/bin/cosign /usr/local/bin/'
@@ -61,6 +60,12 @@ jobs:
           buildah run ${CONTAINER} sh -c 'ln -s $(go env GOPATH)/bin/chezmoi /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which chezmoi && chezmoi --help'
           buildah run ${CONTAINER} sh -c 'rm -fR chezmoi' || true
+          echo '--------------------------'
+          buildah run ${CONTAINER} sh -c 'ln -s $(go env GOPATH)'
+          buildah run ${CONTAINER} sh -c 'ln -s $(go env GOCATCH)'
+          buildah run ${CONTAINER} sh -c 'ln -s $(go env GOBIN)'
+          false
+          # buildah run ${CONTAINER} sh -c 'rm $()' || true
           echo 'RUSTUP'
           buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
           buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'

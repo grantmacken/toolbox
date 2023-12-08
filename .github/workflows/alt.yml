@@ -81,6 +81,7 @@ jobs:
           buildah run ${CONTAINER} sh -c 'cargo wasi --version'
           echo 'CARGO BIN INSTALL: cli utilites'
           buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
+          buildah run ${CONTAINER} sh -c 'ln -s /usr/local/cargo/bin/cargo-binstall /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'cargo-binstall --no-confirm --no-symlinks just ripgrep stylua tree-sitter-cli wasm-pack' 
           buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which rg && which just && which stylua'

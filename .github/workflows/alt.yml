@@ -24,13 +24,13 @@ jobs:
           username: ${{ env.REPO_OWNER }}
           password: ${{ env.GITHUB_PASSWORD }}
           registry: ${{ env.GITHUB_REGISTRY }} 
-      - name: build editor base
+      - name: build
         run: |
           set -euxo pipefail
           FEDORA_VER=${{ env.FEDORA_VER }}
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:${FEDORA_VER})
           buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'dnf -y python3-pip age nodejs' &>/dev/null
+          buildah run ${CONTAINER} sh -c 'dnf -y install python3-pip age nodejs' &>/dev/null
           buildah run ${CONTAINER} sh -c 'dnf clean all' &>/dev/null
           echo 'NEOVIM'
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
@@ -97,3 +97,10 @@ jobs:
           buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
           buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
           buildah commit --rm ${CONTAINER} localhost/tbx:${{ env.VERSION }}
+      - name: push
+        run: |
+          buildah tag localhost/tbx:${{ env.VERSION }} ghcr.io/${{ github.repository_owner }}/tbx:${{ env.VERSION }}
+          buildah tag localhost/tbx:${{ env.VERSION }} ghcr.io/${{ github.repository_owner }}/tbx:latest
+          buildah push ghcr.io/${{ github.repository_owner }}/tbx:${{ env.VERSION }}
+          buildah push ghcr.io/${{ github.repository_owner }}/tbx:latest
+

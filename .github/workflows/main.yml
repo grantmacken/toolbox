@@ -13,8 +13,8 @@ jobs:
         buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
         buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null
         buildah run ${CONTAINER} sh -c 'dnf clean all' &>/dev/null
-    - name: Save
-      run: podman save --quiet -o tbx_base.tar localhost/tbx_base
+        buildah commit --squash --rm ${CONTAINER} localhost/tbx_base
+        podman save --quiet -o tbx_base.tar localhost/tbx_base
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
@@ -33,3 +33,4 @@ jobs:
       run: podman load tbx_base.tar
     - name: Show
       run: podman images
+

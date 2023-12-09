@@ -22,7 +22,7 @@ jobs:
         with:
           name: tbx_base
           path: tbx_base.tar
-    tbx_golang:
+  tbx_golang:
     needs: tbx_base
     runs-on: ubuntu-latest
     timeout-minutes: 10

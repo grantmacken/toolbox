@@ -4,33 +4,34 @@ jobs:
   tbx_base:
     runs-on: ubuntu-latest
     steps:
-      - name: Build
-        run: |
-          echo 'NEOVIM'
-          CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
-          buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
-      - name: Clean
-        run: |
-          buildah run ${CONTAINER} sh -c 'rm -R neovim' &>/dev/null
-          buildah run ${CONTAINER} sh -c 'dnf clean all' &>/dev/null
-      - name: Save
-        run: podman save --quiet -o tbx_base.tar localhost/tbx_base
-      - name: Upload
-        uses: actions/upload-artifact@v3
-        with:
-          name: tbx_base
-          path: tbx_base.tar
+    - name: Build
+      run: |
+        echo 'NEOVIM'
+        CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
+        buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
+    - name: Clean
+      run: |
+        buildah run ${CONTAINER} sh -c 'rm -R neovim' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'dnf clean all' &>/dev/null
+    - name: Save
+      run: podman save --quiet -o tbx_base.tar localhost/tbx_base
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: tbx_base
+        path: tbx_base.tar
   tbx_golang:
     needs: tbx_base
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Download
-        uses: actions/download-artifact@v3
-        with: tbx_base
-      - name: Load
-        run: podman load tbx_base.tar
-      - name: Show
-        run: podman images
+    - uses: actions/download-artifact@v3
+      with:
+        name: tbx_base
+        path: tbx_base.tar
+    - name: Load
+      run: podman load tbx_base.tar
+    - name: Show
+      run: podman images

@@ -11,9 +11,7 @@ jobs:
         buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
         buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
         buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
-    - name: Clean
-      run: |
-        buildah run ${CONTAINER} sh -c 'rm -R neovim' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null
         buildah run ${CONTAINER} sh -c 'dnf clean all' &>/dev/null
     - name: Save
       run: podman save --quiet -o tbx_base.tar localhost/tbx_base

@@ -27,7 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/download-artifact@v3
+      - name: Download
+        uses: actions/download-artifact@v3
         with: tbx_base
       - name: Load
         run: podman load tbx_base.tar

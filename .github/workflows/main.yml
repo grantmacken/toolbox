@@ -1,6 +1,15 @@
-# name: toolbox_builds
-# # on: push
-# on: workflow_dispatch
+name: CI
+on: push
+jobs:
+  container-test-job:
+    runs-on: ubuntu-latest
+    container: quay.io/toolbx-images/fedora-toolbox:39
+    steps:
+      - name: build
+        run: |
+          dnf -y install ninja-build cmake gcc make unzip gettext
+
+# on: push
 # env:
 #   REGISTRY_USER: ${{ github.actor }}
 #   REGISTRY_PASSWORD: ${{ github.token }}

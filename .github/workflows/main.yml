@@ -1,7 +1,7 @@
 name: CI
 on: push
 jobs:
-  neovim build:
+  tbx_base:
     runs-on: ubuntu-latest
     steps:
       - name: Build

@@ -61,12 +61,8 @@ jobs:
           buildah run ${CONTAINER} sh -c 'which chezmoi && chezmoi --help'
           buildah run ${CONTAINER} sh -c 'rm -fR chezmoi' || true
           echo '--------------------------'
-          buildah run ${CONTAINER} sh -c 'ls -al $(go env GOPATH)' || true
-          buildah run ${CONTAINER} sh -c 'ls -al $(go env GOCACHE)' || true
-          buildah run ${CONTAINER} sh -c 'ls -al $(go env GOBIN)' || true
-          buildah run ${CONTAINER} sh -c 'rm -v -R $(go env GOCACHE)' || true
-          false
-          # buildah run ${CONTAINER} sh -c 'rm $()' || true
+          buildah run ${CONTAINER} sh -c 'go env GOCACHE' || true
+          buildah run ${CONTAINER} sh -c 'rm -R $(go env GOCACHE)' || true
           echo 'RUSTUP'
           buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
           buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'

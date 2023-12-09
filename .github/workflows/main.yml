@@ -6,9 +6,9 @@ jobs:
     steps:
       - name: build
         run: |
-          dnf -y install ninja-build cmake gcc make unzip gettext
           echo 'NEOVIM'
           CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
+          buildah run ${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
           buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
           buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
           podman save --quiet -o tbx_base.tar localhost/tbx_base

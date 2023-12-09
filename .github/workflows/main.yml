@@ -33,4 +33,29 @@ jobs:
       run: podman load tbx_base.tar
     - name: Show
       run: podman images
-
+  tbx_rustup:
+    needs: tbx_base
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: tbx_base
+        path: tbx_base.tar
+    - name: Load
+      run: podman load tbx_base.tar
+    - name: Show
+      run: podman images
+  tbx_wasi_cli:
+    needs: tbx_base
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: tbx_base
+        path: tbx_base.tar
+    - name: Load
+      run: podman load tbx_base.tar
+    - name: Show
+      run: podman images

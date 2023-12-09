@@ -30,7 +30,7 @@ jobs:
         name: tbx_base
         path: tbx_base.tar
     - name: Load
-      run: podman load tbx_base.tar
+      run: cat tbx_base.tar | podman load
     - name: Show
       run: podman images
   tbx_rustup:
@@ -43,7 +43,7 @@ jobs:
         name: tbx_base
         path: tbx_base.tar
     - name: Load
-      run: podman load tbx_base.tar
+      run: cat tbx_base.tar | podman load
     - name: Show
       run: podman images
   tbx_wasi_cli:

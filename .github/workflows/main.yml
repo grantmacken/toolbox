@@ -14,12 +14,12 @@ jobs:
         buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null
         buildah run ${CONTAINER} sh -c 'dnf clean all' &>/dev/null
         buildah commit --squash --rm ${CONTAINER} localhost/tbx_base
-        podman save --quiet -o tbx_base.tar localhost/tbx_base
+        mkdir artifacts && podman save --quiet -o artifacts/tbx_base.tar localhost/tbx_base
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
         name: tbx_base
-        path: tbx_base.tar
+        path: artifacts
   tbx_golang:
     needs: tbx_base
     runs-on: ubuntu-latest
@@ -28,34 +28,34 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: tbx_base
-        path: tbx_base.tar
+        path: artifacts
     - name: Load
-      run: cat tbx_base.tar | podman load
+      run: cat artifacts/tbx_base.tar | podman load
     - name: Show
       run: podman images
-  tbx_rustup:
-    needs: tbx_base
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: tbx_base
-        path: tbx_base.tar
-    - name: Load
-      run: cat tbx_base.tar | podman load
-    - name: Show
-      run: podman images
-  tbx_wasi_cli:
-    needs: tbx_base
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: tbx_base
-        path: tbx_base.tar
-    - name: Load
-      run: podman load tbx_base.tar
-    - name: Show
-      run: podman images
+  # tbx_rustup:
+  #   needs: tbx_base
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   steps:
+  #   - uses: actions/download-artifact@v3
+  #     with:
+  #       name: tbx_base
+  #       path: tbx_base.tar
+  #   - name: Load
+  #     run: cat tbx_base.tar | podman load
+  #   - name: Show
+  #     run: podman images
+  # tbx_wasi_cli:
+  #   needs: tbx_base
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   steps:
+  #   - uses: actions/download-artifact@v3
+  #     with:
+  #       name: tbx_base
+  #       path: tbx_base.tar
+  #   - name: Load
+  #     run: podman load tbx_base.tar
+  #   - name: Show
+  #     run: podman images

@@ -9,7 +9,7 @@ jobs:
         echo 'NEOVIM'
         CONTAINER=$(buildah from registry.fedoraproject.org/fedora-minimal)
         # CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
-        # buildah run ${CONTAINER} sh -c 'microdnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'microdnf -y install git ninja-build cmake gcc make unzip gettext' &>/dev/null
         # buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
         # buildah run ${CONTAINER} sh -c 'which nvim && nvim --version && nvim -V'
         # buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null

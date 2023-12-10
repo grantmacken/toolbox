@@ -37,9 +37,13 @@ jobs:
       run: |
         CONTAINER=$(buildah from localhost/tbx_base:latest)
         echo 'NEOVIM'
-        buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-        buildah run ${CONTAINER} sh -c 'which nvim && nvim --version && nvim -V'
-        buildah run ${CONTAINER} sh -c 'tree -L 3 /usr/local'
+        NVIM_VER="$(curl -sqL  https://github.com/neovim/neovim/releases/latest | grep -oP 'v(\d+\.){2}\d+' | head -1)"
+        buildah run ${CONTAINER} sh -c "wget -o nvim.tgz https://github.com/neovim/neovim/releases/download/${NVIM_VER}/nvim-linux64.tar.gz"
+        buildah run ${CONTAINER} sh -c 'tar xzvf nvim.tgz'
+        # buildah run ${CONTAINER} sh -c 'https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+        # buildah run ${CONTAINER} sh -c 'which nvim && nvim --version && nvim -V'
+        # buildah run ${CONTAINER} sh -c 'tree -L 3 /usr/local'
+        # buildah run ${CONTAINER} sh -c 'tar -cvf /usr/local'
         # buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null
         # buildah run ${CONTAINER} sh -c 'microdnf clean all' &>/dev/null
   #       buildah commit --squash --rm ${CONTAINER} localhost/tbx_base

@@ -14,7 +14,6 @@ jobs:
         buildah run ${CONTAINER} sh -c 'microdnf -y install ninja-build cmake gcc make unzip gettext'
         buildah run ${CONTAINER} sh -c 'microdnf -y install git openssl openssh-clients'
         # buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install'
-acl gnupg2 gzip openssl pam python3 sudo systemd tar
         # buildah run ${CONTAINER} sh -c 'which nvim && nvim --version && nvim -V'
         # buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null
         # buildah run ${CONTAINER} sh -c 'microdnf clean all' &>/dev/null

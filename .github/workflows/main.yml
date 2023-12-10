@@ -9,7 +9,7 @@ jobs:
         echo 'NEOVIM'
         CONTAINER=$(buildah from registry.fedoraproject.org/fedora-minimal)
         # CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
-        buildah run ${CONTAINER} sh -c 'microdnf -y upgrade && microdnf -y reinstall bash coreutils-common curl findutils gawk gnupg2 grep libcap p11-kit rpm sed util-linux-core'
+        buildah run ${CONTAINER} sh -c 'microdnf -y upgrade && microdnf -y reinstall bash coreutils-common curl findutils gawk  grep libcap p11-kit rpm sed util-linux-core'
         buildah run ${CONTAINER} sh -c 'microdnf -y upgrade && microdnf -y install acl gnupg2 gzip openssl pam python3 sudo systemd tar'
         buildah run ${CONTAINER} sh -c 'microdnf -y install ninja-build cmake gcc make unzip gettext'
         buildah run ${CONTAINER} sh -c 'microdnf -y install git openssl openssh-clients'

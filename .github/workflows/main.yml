@@ -25,7 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-    - uses: actions/download-artifact@v3
+    - name: Download
+      uses: actions/download-artifact@v3
       with:
         name: tbx_base
         path: artifacts
@@ -33,7 +34,36 @@ jobs:
       run: cat artifacts/tbx_base.tar | podman load
     - name: Show
       run: podman images
-  # tbx_rustup:
+    - name: Build
+      run: |
+        CONTAINER=$(buildah from localhost/tbx_base:latest)
+        echo 'GOLANG'
+        GO_VER=go1.21.4
+        buildah run ${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/${GO_VER}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
+        buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
+        buildah run ${CONTAINER} sh -c 'which go'
+  tbx_rustup:
+    needs: tbx_base
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Download
+      uses: actions/download-artifact@v3
+      with:
+        name: tbx_base
+        path: artifacts
+    - name: Load
+      run: cat artifacts/tbx_base.tar | podman load
+    - name: Build
+      run: |
+        CONTAINER=$(buildah from localhost/tbx_base:latest)
+        echo 'RUSTUP'
+        buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
+        buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
+        buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+        buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' 
+        buildah run ${CONTAINER} sh -c 'which rustfmt && rustfmt --version'  # Formatter
+        buildah run ${CONTAINER} sh -c 'which rust-analyzer' # LSP
   #   needs: tbx_base
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10

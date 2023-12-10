@@ -1,7 +1,7 @@
 name: CI
 on: push
 jobs:
-  tbx_neovim:
+  tbx_base:
     runs-on: ubuntu-latest
     steps:
     - name: Build
@@ -20,7 +20,7 @@ jobs:
       with:
         name: tbx_base
         path: artifacts
-  tbx_neeovim:
+  tbx_neovim:
     needs: tbx_base
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -9,9 +9,9 @@ jobs:
         echo 'NEOVIM'
         CONTAINER=$(buildah from registry.fedoraproject.org/fedora-minimal)
         # CONTAINER=$(buildah from quay.io/toolbx-images/fedora-toolbox:39)
-        buildah run ${CONTAINER} sh -c 'microdnf -y upgrade && microdnf -y install coreutils-full glibc-all-langpack'
-        # buildah run ${CONTAINER} sh -c 'microdnf -y install ninja-build cmake gcc make unzip gettext'
-        # buildah run ${CONTAINER} sh -c 'microdnf -y install git openssl openssh-clients'
+        buildah run ${CONTAINER} sh -c 'microdnf -y upgrade && microdnf -y reinstall acl bash coreutils-common curl findutils gawk gnupg2 grep gzip libcap openssl p11-kit pam python3 rpm sed sudo systemd tar util-linux-core'
+        buildah run ${CONTAINER} sh -c 'microdnf -y install ninja-build cmake gcc make unzip gettext'
+        buildah run ${CONTAINER} sh -c 'microdnf -y install git openssl openssh-clients'
         # buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install'
 
         # buildah run ${CONTAINER} sh -c 'which nvim && nvim --version && nvim -V'

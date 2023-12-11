@@ -14,8 +14,9 @@ jobs:
         buildah run ${CONTAINER} sh -c 'microdnf -y install bash-completion bc bzip2 diffutils dnf-plugins-core findutils flatpak-spawn fpaste git gnupg2 gnupg2-smime gvfs-client hostname iproute iputils keyutils krb5-libs less lsof man-db man-pages mesa-dri-drivers mesa-vulkan-drivers mtr nano-default-editor nss-mdns openssh-clients passwd pigz procps-ng rsync shadow-utils sudo tcpdump time traceroute tree unzip util-linux vte-profile vulkan-loader wget which whois words xorg-x11-xauth xz zip' &>/dev/null
         buildah run ${CONTAINER} sh -c 'microdnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
         buildah run ${CONTAINER} sh -c 'microdnf clean all' &>/dev/null
-        buildah run ${CONTAINER} sh -c 'tree /var/cache' || true
         buildah run ${CONTAINER} sh -c 'printenv' || true
+        buildah run ${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'which nvim && nvim --version'
 
         # buildah commit --squash --rm ${CONTAINER} localhost/tbx_base
         # mkdir artifacts && podman save --quiet -o artifacts/tbx_base.tar localhost/tbx_base

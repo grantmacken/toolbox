@@ -14,45 +14,17 @@ jobs:
         buildah run ${CONTAINER} sh -c 'microdnf -y install bash-completion bc bzip2 diffutils dnf-plugins-core findutils flatpak-spawn fpaste git gnupg2 gnupg2-smime gvfs-client hostname iproute iputils keyutils krb5-libs less lsof man-db man-pages mesa-dri-drivers mesa-vulkan-drivers mtr nano-default-editor nss-mdns openssh-clients passwd pigz procps-ng rsync shadow-utils sudo tcpdump time traceroute tree unzip util-linux vte-profile vulkan-loader wget which whois words xorg-x11-xauth xz zip' &>/dev/null
         buildah run ${CONTAINER} sh -c 'microdnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null
         buildah run ${CONTAINER} sh -c 'microdnf clean all' &>/dev/null
-        buildah commit --squash --rm ${CONTAINER} localhost/tbx_base
-        mkdir artifacts && podman save --quiet -o artifacts/tbx_base.tar localhost/tbx_base
-    - name: Upload
-      uses: actions/upload-artifact@v3
-      with:
-        name: tbx_base
-        path: artifacts
-  tbx_neovim:
-    needs: tbx_base
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - name: Download
-      uses: actions/download-artifact@v3
-      with:
-        name: tbx_base
-        path: artifacts
-    - name: Load
-      run: cat artifacts/tbx_base.tar | podman load
-    - name: Build
-      run: |
-        CONTAINER=$(buildah from localhost/tbx_base:latest)
-        NVIM_VER="$(curl -sqL  https://github.com/neovim/neovim/releases/latest | grep -oP 'v(\d+\.){2}\d+' | head -1)"
-        echo "NEOVIM ${NVIM_VER}"
-        buildah run ${CONTAINER} sh -c "wget https://github.com/neovim/neovim/releases/download/${NVIM_VER}/nvim-linux64.tar.gz"
-        buildah run ${CONTAINER} sh -c 'tar xzvf nvim-linux64.tar.gz'
-        # buildah run ${CONTAINER} sh -c 'https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-        # buildah run ${CONTAINER} sh -c 'which nvim && nvim --version && nvim -V'
-        # buildah run ${CONTAINER} sh -c 'tree -L 3 /usr/local'
-        # buildah run ${CONTAINER} sh -c 'tar -cvf /usr/local'
-        # buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null
-        # buildah run ${CONTAINER} sh -c 'microdnf clean all' &>/dev/null
-  #       buildah commit --squash --rm ${CONTAINER} localhost/tbx_base
+        buildah run ${CONTAINER} sh -c 'printenv' &>/dev/null
+
+        # buildah commit --squash --rm ${CONTAINER} localhost/tbx_base
+        # mkdir artifacts && podman save --quiet -o artifacts/tbx_base.tar localhost/tbx_base
+
   #   - name: Upload
   #     uses: actions/upload-artifact@v3
   #     with:
   #       name: tbx_base
   #       path: artifacts
-  # tbx_golang:
+  # tbx_neovim:
   #   needs: tbx_base
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10
@@ -64,87 +36,118 @@ jobs:
   #       path: artifacts
   #   - name: Load
   #     run: cat artifacts/tbx_base.tar | podman load
-  #   - name: Show
-  #     run: podman images
   #   - name: Build
   #     run: |
   #       CONTAINER=$(buildah from localhost/tbx_base:latest)
-  #       echo 'GOLANG'
-  #       GO_VER="go1.21.4"
-  #       buildah run ${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/${GO_VER}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
-  #       buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
-  #       buildah run ${CONTAINER} sh -c 'which go'
-  tbx_rustup:
-    needs: tbx_base
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - name: Download
-      uses: actions/download-artifact@v3
-      with:
-        name: tbx_base
-        path: artifacts
-    - name: Load
-      run: cat artifacts/tbx_base.tar | podman load
-    - name: Build
-      run: |
-        CONTAINER=$(buildah from localhost/tbx_base:latest)
-        echo 'RUSTUP'
-        buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
-        buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
-        buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
-        buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' 
-        buildah run ${CONTAINER} sh -c 'which rustfmt && rustfmt --version'  # Formatter
-        buildah run ${CONTAINER} sh -c 'which rust-analyzer' # LSP
-  tbx_cli:
-    needs: tbx_base
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - name: Download
-      uses: actions/download-artifact@v3
-      with:
-        name: tbx_base
-        path: artifacts
-    - name: Load
-      run: cat artifacts/tbx_base.tar | podman load
-    - name: Build
-      run: |
-        CONTAINER=$(buildah from localhost/tbx_base:latest)
-        echo 'WASMTIME'
-        buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
-        buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash" 
-        # buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-        # buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
-        # echo 'SPIN'
-        # buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
-        # buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
-        # buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
-        # buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
-        # buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
-
+  #       NVIM_VER="$(curl -sqL  https://github.com/neovim/neovim/releases/latest | grep -oP 'v(\d+\.){2}\d+' | head -1)"
+  #       echo "NEOVIM ${NVIM_VER}"
+  #       buildah run ${CONTAINER} sh -c "wget https://github.com/neovim/neovim/releases/download/${NVIM_VER}/nvim-linux64.tar.gz"
+  #       buildah run ${CONTAINER} sh -c 'tar xzvf nvim-linux64.tar.gz'
+  #       # buildah run ${CONTAINER} sh -c 'https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
+  #       # buildah run ${CONTAINER} sh -c 'which nvim && nvim --version && nvim -V'
+  #       # buildah run ${CONTAINER} sh -c 'tree -L 3 /usr/local'
+  #       # buildah run ${CONTAINER} sh -c 'tar -cvf /usr/local'
+  #       # buildah run ${CONTAINER} sh -c 'ls . && rm -fR neovim' &>/dev/null
+  #       # buildah run ${CONTAINER} sh -c 'microdnf clean all' &>/dev/null
+  # #       buildah commit --squash --rm ${CONTAINER} localhost/tbx_base
+  # #   - name: Upload
+  # #     uses: actions/upload-artifact@v3
+  # #     with:
+  # #       name: tbx_base
+  # #       path: artifacts
+  # # tbx_golang:
+  # #   needs: tbx_base
+  # #   runs-on: ubuntu-latest
+  # #   timeout-minutes: 10
+  # #   steps:
+  # #   - name: Download
+  # #     uses: actions/download-artifact@v3
+  # #     with:
+  # #       name: tbx_base
+  # #       path: artifacts
+  # #   - name: Load
+  # #     run: cat artifacts/tbx_base.tar | podman load
+  # #   - name: Show
+  # #     run: podman images
+  # #   - name: Build
+  # #     run: |
+  # #       CONTAINER=$(buildah from localhost/tbx_base:latest)
+  # #       echo 'GOLANG'
+  # #       GO_VER="go1.21.4"
+  # #       buildah run ${CONTAINER} sh -c 'wget -q -O go.tgz https://go.dev/dl/${GO_VER}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz'
+  # #       buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
+  # #       buildah run ${CONTAINER} sh -c 'which go'
+  # tbx_rustup:
   #   needs: tbx_base
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10
   #   steps:
-  #   - uses: actions/download-artifact@v3
+  #   - name: Download
+  #     uses: actions/download-artifact@v3
   #     with:
   #       name: tbx_base
-  #       path: tbx_base.tar
+  #       path: artifacts
   #   - name: Load
-  #     run: cat tbx_base.tar | podman load
-  #   - name: Show
-  #     run: podman images
-  # tbx_wasi_cli:
+  #     run: cat artifacts/tbx_base.tar | podman load
+  #   - name: Build
+  #     run: |
+  #       CONTAINER=$(buildah from localhost/tbx_base:latest)
+  #       echo 'RUSTUP'
+  #       buildah config --env RUSTUP_HOME=/usr/local/rustup --env CARGO_HOME=/usr/local/cargo ${CONTAINER}
+  #       buildah run ${CONTAINER} sh -c 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
+  #       buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/rustup /usr/local/cargo && ln -s /usr/local/cargo/bin/* /usr/local/bin/'
+  #       buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' 
+  #       buildah run ${CONTAINER} sh -c 'which rustfmt && rustfmt --version'  # Formatter
+  #       buildah run ${CONTAINER} sh -c 'which rust-analyzer' # LSP
+  # tbx_cli:
   #   needs: tbx_base
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10
   #   steps:
-  #   - uses: actions/download-artifact@v3
+  #   - name: Download
+  #     uses: actions/download-artifact@v3
   #     with:
   #       name: tbx_base
-  #       path: tbx_base.tar
+  #       path: artifacts
   #   - name: Load
-  #     run: podman load tbx_base.tar
-  #   - name: Show
-  #     run: podman images
+  #     run: cat artifacts/tbx_base.tar | podman load
+  #   - name: Build
+  #     run: |
+  #       CONTAINER=$(buildah from localhost/tbx_base:latest)
+  #       echo 'WASMTIME'
+  #       buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
+  #       buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash" 
+  #       # buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
+  #       # buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
+  #       # echo 'SPIN'
+  #       # buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
+  #       # buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
+  #       # buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
+  #       # buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
+  #       # buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
+  #
+  # #   needs: tbx_base
+  # #   runs-on: ubuntu-latest
+  # #   timeout-minutes: 10
+  # #   steps:
+  # #   - uses: actions/download-artifact@v3
+  # #     with:
+  # #       name: tbx_base
+  # #       path: tbx_base.tar
+  # #   - name: Load
+  # #     run: cat tbx_base.tar | podman load
+  # #   - name: Show
+  # #     run: podman images
+  # # tbx_wasi_cli:
+  # #   needs: tbx_base
+  # #   runs-on: ubuntu-latest
+  # #   timeout-minutes: 10
+  # #   steps:
+  # #   - uses: actions/download-artifact@v3
+  # #     with:
+  # #       name: tbx_base
+  # #       path: tbx_base.tar
+  # #   - name: Load
+  # #     run: podman load tbx_base.tar
+  # #   - name: Show
+  # #     run: podman images

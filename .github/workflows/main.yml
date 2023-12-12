@@ -17,13 +17,14 @@ jobs:
         buildah run ${CONTAINER} sh -c "go env GOCACHE"
         buildah run ${CONTAINER} sh -c "go env GOPATH"
         buildah run ${CONTAINER} sh -c "printenv"
+        buildah run ${CONTAINER} sh -c "mkdir -p $(go env GOPATH)"
         buildah run ${CONTAINER} sh -c "mkdir -p $(go env GOCACHE)"
-        # echo 'GH-CLI' # the github cli 
-        # buildah run ${CONTAINER} sh -c 'git clone https://github.com/cli/cli.git gh-cli'
-        # buildah run ${CONTAINER} sh -c 'cd gh-cli && make install prefix=/usr/local/gh' &>/dev/null
-        # buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/gh && ln -s /usr/local/gh/bin/* /usr/local/bin/'
-        # buildah run ${CONTAINER} sh -c 'which gh && gh --version && gh --help'
-        # buildah run ${CONTAINER} sh -c 'rm -fR gh-cli' || true
+        echo 'GH-CLI' # the github cli 
+        buildah run ${CONTAINER} sh -c 'git clone https://github.com/cli/cli.git gh-cli'
+        buildah run ${CONTAINER} sh -c 'cd gh-cli && make install prefix=/usr/local/gh' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/gh && ln -s /usr/local/gh/bin/* /usr/local/bin/'
+        buildah run ${CONTAINER} sh -c 'which gh && gh --version && gh --help'
+        buildah run ${CONTAINER} sh -c 'rm -fR gh-cli' || true
         # echo 'COSIGN'
         # buildah run ${CONTAINER} sh -c 'git clone https://github.com/sigstore/cosign'
         # buildah run ${CONTAINER} sh -c 'cd cosign && go install ./cmd/cosign' &>/dev/null

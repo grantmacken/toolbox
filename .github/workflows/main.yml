@@ -71,25 +71,24 @@ jobs:
         buildah run ${CONTAINER} sh -c 'cargo-binstall --no-confirm --no-symlinks just ripgrep stylua tree-sitter-cli wasm-pack' 
         buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
         buildah run ${CONTAINER} sh -c 'which rg && which just && which stylua'
-
-  # tbx_cli:
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   steps:
-  #   - name: Build
-  #     run: |
-  #       CONTAINER=$(buildah from localhost/tbx_base:latest)
-  #       echo 'WASMTIME'
-  #       buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
-  #       buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash" 
-  #       buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-  #       buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
-  #       echo 'SPIN'
-  #       buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
-  #       buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
-  #       buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
-  #       buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
-  #       buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
+  tbx-cli-wasi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Build
+      run: |
+        CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
+        echo 'WASMTIME'
+        buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
+        buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash" 
+        buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
+        buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
+        echo 'SPIN'
+        buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
+        buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
+        buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
+        buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
   #
   # #   needs: tbx_base
   # #   runs-on: ubuntu-latest

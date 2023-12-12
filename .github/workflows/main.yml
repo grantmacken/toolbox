@@ -92,7 +92,7 @@ jobs:
         buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
         buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
   tbx-kit:
-    needs: [tbx_golang tbx_rustup tbx_wasi]
+    needs: [tbx_golang, tbx_rustup, tbx_wasi]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

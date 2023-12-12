@@ -9,11 +9,11 @@ jobs:
       run: |
         # set -euxo pipefail
         GO_VER="$(curl -s https://go.dev/dl/ | grep -m 1 -oP 'go(\d+\.){2}\d+')"
-        echo "GOLANG ${GO_VER}" 
-        # CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base)
-        # buildah run ${CONTAINER} sh -c "wget -q -O go.tgz https://go.dev/dl/${GO_VER}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz"
-        # buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
-        # buildah run ${CONTAINER} sh -c 'which go'
+        echo "GOLANG version ${GO_VER}" 
+        CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
+        buildah run ${CONTAINER} sh -c "wget -q -O go.tgz https://go.dev/dl/${GO_VER}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz"
+        buildah run ${CONTAINER} sh -c 'chmod -R a+w /usr/local/go && ln -s /usr/local/go/bin/* /usr/local/bin/'
+        buildah run ${CONTAINER} sh -c 'which go'
   # tbx_rustup:
   #   needs: tbx_base
   #   runs-on: ubuntu-latest

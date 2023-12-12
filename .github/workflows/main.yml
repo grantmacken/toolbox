@@ -58,24 +58,38 @@ jobs:
         buildah run ${CONTAINER} sh -c 'which rustup && rustup --version' 
         buildah run ${CONTAINER} sh -c 'which rustfmt && rustfmt --version'  # Formatter
         buildah run ${CONTAINER} sh -c 'which rust-analyzer' # LSP
-  tbx_cli:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - name: Build
-      run: |
-        CONTAINER=$(buildah from localhost/tbx_base:latest)
-        echo 'WASMTIME'
-        buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
-        buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash" 
-        buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-        buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
-        echo 'SPIN'
-        buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
-        buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
-        buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
-        buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
-        buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
+        echo 'RUSTUP wasi targets'
+        buildah run ${CONTAINER} sh -c 'rustup target add wasm32-wasi'  &>/dev/null
+        buildah run ${CONTAINER} sh -c 'rustup target add wasm32-unknown-unknown'  &>/dev/null # to compile our example Wasm/WASI files for testing
+        buildah run ${CONTAINER} sh -c 'rustup show' 
+        echo 'CARGO wasi'
+        buildah run ${CONTAINER} sh -c 'which cargo && cargo --version && cargo --help'
+        buildah run ${CONTAINER} sh -c 'cargo install cargo-wasi' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'cargo wasi --version'
+        echo 'CARGO BIN INSTALL: cli utilites'
+        buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
+        buildah run ${CONTAINER} sh -c 'cargo-binstall --no-confirm --no-symlinks just ripgrep stylua tree-sitter-cli wasm-pack' 
+        buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
+        buildah run ${CONTAINER} sh -c 'which rg && which just && which stylua'
+
+  # tbx_cli:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   steps:
+  #   - name: Build
+  #     run: |
+  #       CONTAINER=$(buildah from localhost/tbx_base:latest)
+  #       echo 'WASMTIME'
+  #       buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
+  #       buildah run ${CONTAINER} sh -c "touch ~/.profile && curl https://wasmtime.dev/install.sh -sSf | bash" 
+  #       buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
+  #       buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
+  #       echo 'SPIN'
+  #       buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '
+  #       buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash' &>/dev/null
+  #       buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
+  #       buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
+  #       buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
   #
   # #   needs: tbx_base
   # #   runs-on: ubuntu-latest

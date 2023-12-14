@@ -1,7 +1,7 @@
 name: CI
 on: push
 jobs:
-  tbx_golang:
+  tbx:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

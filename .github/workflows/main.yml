@@ -7,7 +7,6 @@ jobs:
     steps:
     - name: Build
       run: |
-        # set -euxo pipefail
         CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
         echo 'WASMTIME'
         buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
@@ -20,7 +19,6 @@ jobs:
         buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
         buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
         buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
-  # tbx-kit:
         GO_VER="$(curl -s https://go.dev/dl/ | grep -m 1 -oP 'go(\d+\.){2}\d+')"
         echo "GOLANG version ${GO_VER}" 
         buildah run ${CONTAINER} sh -c "wget -q -O go.tgz https://go.dev/dl/${GO_VER}.linux-amd64.tar.gz && tar -C /usr/local -xzf go.tgz"

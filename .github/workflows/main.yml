@@ -1,20 +1,16 @@
 name: CI
 on: push
-env:
-  REGISTRY: 'ghcr.io/${{ github.repository_owner }}'
-  NAME: 'tbx'
-  VERSION: '1.0.0'
 jobs:
   tbx:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-    - name: Log in to ghcr.io
-      uses: redhat-actions/podman-login@v1
-      with:
-        username: ${{ env.REPO_OWNER }}
-        password: ${{ env.GITHUB_PASSWORD }}
-        registry: ${{ env.GITHUB_REGISTRY }} 
+    # - name: Log in to ghcr.io
+    #   uses: redhat-actions/podman-login@v1
+    #   with:
+    #     username: ${{ env.REPO_OWNER }}
+    #     password: ${{ env.GITHUB_PASSWORD }}
+    #     registry: ${{ env.GITHUB_REGISTRY }} 
     - name: Build
       run: |
         CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
@@ -96,10 +92,10 @@ jobs:
         buildah run ${CONTAINER} sh -c 'cd /usr/local/spin && ls -al .'
         buildah run ${CONTAINER} sh -c 'ln -s /usr/local/spin/spin /usr/local/bin/'
         buildah run ${CONTAINER} sh -c 'which spin && spin --version && spin --help'
-        buildah commit --rm ${CONTAINER} ${{ env.REGISTRY }}/${{ env.NAME }}:${{ env.VERSION }} 
-        buildah tag ${{ env.REGISTRY }}/${{ env.NAME }}:${{ env.VERSION }} ${{ env.REGISTRY }}/${{ env.NAME }}:latest
-        buildah push ${{ env.REGISTRY }}/${{ env.NAME }}:latest
-        buildah push ${{ env.REGISTRY }}/${{ env.NAME }}:${{ env.VERSION }}
+        # buildah commit --rm ${CONTAINER} ${{ env.REGISTRY }}/${{ env.NAME }}:${{ env.VERSION }} 
+        # buildah tag ${{ env.REGISTRY }}/${{ env.NAME }}:${{ env.VERSION }} ${{ env.REGISTRY }}/${{ env.NAME }}:latest
+        # buildah push ${{ env.REGISTRY }}/${{ env.NAME }}:latest
+        # buildah push ${{ env.REGISTRY }}/${{ env.NAME }}:${{ env.VERSION }}
   # tbx_wasi:
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10

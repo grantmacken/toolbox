@@ -18,9 +18,13 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ github.token }}
         registry: ${{ env.REGISTRY }}
- #    - name: Build
- #      run: |
- #        CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
+    - name: Build
+      run: |
+        CONTAINER=$(buildah from registry.fedoraproject.org/fedora-minimal)
+        buildah run ${CONTAINER} sh -c 'microdnf --help' || true
+        buildah run ${CONTAINER} sh -c 'microdnf -y upgrade'
+        buildah run ${CONTAINER} sh -c 'rpm -qa'
+        
  #        GO_VER="$(curl -s https://go.dev/dl/ | grep -m 1 -oP 'go(\d+\.){2}\d+')"
  #        echo "GOLANG version ${GO_VER}" #  --http1.1
  #        buildah run ${CONTAINER} sh -c 'git config --global http.postBuffer 524288000 && git config --global http.version HTTP/1.1 '

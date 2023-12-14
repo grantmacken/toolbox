@@ -64,15 +64,22 @@ jobs:
         buildah run ${CONTAINER} sh -c 'rustup show' 
         echo 'CARGO wasi'
         buildah run ${CONTAINER} sh -c 'which cargo && cargo --version && cargo --help'
-        buildah run ${CONTAINER} sh -c 'cargo install cargo-wasi' &>/dev/null
+        buildah run ${CONTAINER} sh -c 'cargo install cargo-wasi cargo-cache' &>/dev/null
         buildah run ${CONTAINER} sh -c 'cargo wasi --version'
+        buildah run ${CONTAINER} sh -c 'cargo cache --version'
+        buildah run ${CONTAINER} sh -c 'cargo cache --version'
         echo 'CARGO BIN INSTALL: cli utilites'
-        buildah run ${CONTAINER} sh -c "cargo install cargo-binstall" &>/dev/null
+        buildah run ${CONTAINER} sh -c "cargo install cargo-binstall " &>/dev/null
         buildah run ${CONTAINER} sh -c 'ln -s /usr/local/cargo/bin/cargo-binstall /usr/local/bin/'
         buildah run ${CONTAINER} sh -c 'cargo-binstall --no-confirm --no-symlinks just ripgrep stylua tree-sitter-cli wasm-pack' 
         buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/cargo/bin/* /usr/local/bin/'
         buildah run ${CONTAINER} sh -c 'which rg && which just && which stylua'
-        #buildah run ${CONTAINER} sh -c "ls -al $(go env GOCACHE)" || true
+        buildah run ${CONTAINER} sh -c 'ls -al ~/' || true
+        buildah run ${CONTAINER} sh -c 'ls -al ~/.cargo' || true
+        buildah run ${CONTAINER} sh -c 'cargo cache --top-cache-items 5' 
+        buildah run ${CONTAINER} sh -c 'cargo cache  --autoclean' 
+        #cargo install (--git git://github.com/matthiaskrgr/cargo-cache OR cargo-cache) --no-default-features --features ci-autoclean cargo-cache
+        #cargo-cache # no further arguments required
   tbx_wasi:
     runs-on: ubuntu-latest
     timeout-minutes: 10

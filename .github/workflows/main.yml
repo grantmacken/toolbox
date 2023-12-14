@@ -91,10 +91,8 @@ jobs:
   #       CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
         echo 'WASMTIME'
         buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
-        buildah run ${CONTAINER} sh -c 'touch $HOME/.profile' 
-        buildah run ${CONTAINER} sh -c 'PROFILE=$HOME/.profile && curl https://wasmtime.dev/install.sh -sSf | bash'  &>/dev/null
+        buildah run ${CONTAINER} sh -c 'curl https://wasmtime.dev/install.sh -sSf | bash' || true
         buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-        buildah run ${CONTAINER} sh -c 'rm $HOME/.profile' 
         buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
         # echo 'SPIN'
         # buildah run ${CONTAINER} sh -c 'mkdir -p /usr/local/spin '

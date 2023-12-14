@@ -11,9 +11,10 @@ jobs:
         CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
         echo 'WASMTIME'
         buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
-        buildah run ${CONTAINER} sh -c "touch $HOME/.bashrc && curl https://wasmtime.dev/install.sh -sSf | bash" 
-        buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
-        buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
+        buildah run ${CONTAINER} sh -c 'printenv && ls -al $HOME' 
+        # buildah run ${CONTAINER} sh -c "mkdir -p $HOME && touch $HOME/.bashrc && curl https://wasmtime.dev/install.sh -sSf | bash" 
+        #buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
+        #buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'
   # tbx-kit:
   #       GO_VER="$(curl -s https://go.dev/dl/ | grep -m 1 -oP 'go(\d+\.){2}\d+')"
   #       echo "GOLANG version ${GO_VER}" 

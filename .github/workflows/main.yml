@@ -11,7 +11,7 @@ jobs:
         CONTAINER=$(buildah from ghcr.io/grantmacken/tbx-base:latest)
         echo 'WASMTIME'
         buildah config --env WASMTIME_HOME=/usr/local/wasmtime ${CONTAINER} 
-        buildah run ${CONTAINER} sh -c 'printenv && ls -al $HOME' 
+        buildah run ${CONTAINER} sh -c 'printenv && ls -al $HOME && touch $HOME/.profile' 
         # buildah run ${CONTAINER} sh -c "mkdir -p $HOME && touch $HOME/.bashrc && curl https://wasmtime.dev/install.sh -sSf | bash" 
         #buildah run ${CONTAINER} sh -c 'ln -sf /usr/local/wasmtime/bin/* /usr/local/bin/'
         #buildah run ${CONTAINER} sh -c 'which wasmtime && wasmtime --help'

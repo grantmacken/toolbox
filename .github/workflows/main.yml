@@ -1,30 +1,32 @@
 name: CI
-on: push
-env:
-  REGISTRY: 'ghcr.io/${{ github.repository_owner }}'
-  NAME: 'tbx'
-  VERSION: '1.0.0'
+on:
+  schedule:
+    - cron: '0 1 * * 1'  #  1am every monday
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - '**/README.md'
 jobs:
-  tbx:
+  build:
+    name: Build Image
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       packages: write
+      id-token: write
     steps:
-    - name: Log in to ghcr.io
-      uses: redhat-actions/podman-login@v1
-      with:
-        username: ${{ github.repository_owner }}
-        password: ${{ github.token }}
-        registry: ${{ env.REGISTRY }}
-    - name: Build
-      run: |
-        CONTAINER=$(buildah from registry.fedoraproject.org/fedora-minimal)
-        buildah run ${CONTAINER} sh -c 'microdnf --help' || true
-        buildah run ${CONTAINER} sh -c 'microdnf -y upgrade'
-        buildah run ${CONTAINER} sh -c 'rpm -qa'
-        
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+      - name: Build
+        shell: bash
+        run: make
+
  #        GO_VER="$(curl -s https://go.dev/dl/ | grep -m 1 -oP 'go(\d+\.){2}\d+')"
  #        echo "GOLANG version ${GO_VER}" #  --http1.1
  #        buildah run ${CONTAINER} sh -c 'git config --global http.postBuffer 524288000 && git config --global http.version HTTP/1.1 '

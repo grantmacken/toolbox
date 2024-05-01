@@ -7,6 +7,31 @@ MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --silent
 include .env
 
+default: neovim
+
+latest/luarocks.name:
+	mkdir -p $(dir $@)
+	wget -q -O - 'https://api.github.com/repos/luarocks/luarocks/tags' | jq  -r '.[0].name' | tee $@
+
+latest/neovim-nightly.json:
+	mkdir -p $(dir $@)
+	wget -q -O - 'https://api.github.com/repos/neovim/neovim/releases/tags/nightly' > $@
+
+latest/neovim.download: latest/neovim-nightly.json
+	mkdir -p $(dir $@)
+	jq -r '.assets[].browser_download_url' $< | grep nvim-linux64.tar.gz  | head -1 | tee $@
+
+neovim: latest/neovim.download:
+	jq -r '.tag_name' latest/neovim-nightly.json
+	jq -r '.name' latest/neovim-nightly.json
+	CONTAINER=$$(buildah from cgr.dev/chainguard/wolfi-base)
+	buildah run $${CONTAINER} sh -c 'apk add wget'
+	echo -n 'download: ' && cat $<
+	cat $< | buildah run $${CONTAINER} sh -c 'cat - | wget -q -O- -i- | tar xvz -C /usr/local' &>/dev/null
+	buildah run $${CONTAINER} sh -c 'ls -al /usr/local' || true
+	buildah commit --rm $${CONTAINER} $@
+
+
 fedora:
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'rm /etc/rpm/macros.image-language-conf' &>/dev/null
@@ -20,20 +45,6 @@ fedora:
 	podman images
 	echo '-----------------------------------------------'
 
-neovim: 
-	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
-	# @see https://github.com/neovim/neovim/wiki/Building-Neovim
-	# TODO install stuff from a checkhealth and Mason build tool required for LSP
-	buildah run $${CONTAINER} sh -c 'git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install' &>/dev/null
-	buildah commit --rm $${CONTAINER} $@:$(FEDORA_VER)
-	podman images
-	podman run localhost/$@:$(FEDORA_VER) sh -c 'which nvim' || true
-	# podman run localhost/$@:$(FEDORA_VER) sh -c 'ls -al /usr/local' || true
-	# podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/share' || true
-	# podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/bin' || true
-	# podman run localhost/$@:$(FEDORA_VER) sh -c 'tree /usr/local/lib' || true
-	 podman run localhost/$@:$(FEDORA_VER) sh -c 'ldd /usr/local/bin/nvim' || true
-	echo '-----------------------------------------------'
 
 # RUSTARCH := x86_64-unknown-linux-musl
 RUSTARCH := x86_64-unknown-linux-gnu

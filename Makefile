@@ -21,7 +21,7 @@ latest/neovim.download: latest/neovim-nightly.json
 	mkdir -p $(dir $@)
 	jq -r '.assets[].browser_download_url' $< | grep nvim-linux64.tar.gz  | head -1 | tee $@
 
-neovim: latest/neovim.download:
+neovim: latest/neovim.download
 	jq -r '.tag_name' latest/neovim-nightly.json
 	jq -r '.name' latest/neovim-nightly.json
 	CONTAINER=$$(buildah from cgr.dev/chainguard/wolfi-base)

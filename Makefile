@@ -7,8 +7,8 @@ MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --silent
 include .env
 
-GROUPNAME := "C Development Tools and Libraries"
-
+GROUP_C_DEV := "C Development Tools and Libraries"
+GROUP_OCAML := "OCaml"
 
 default: tbx
 
@@ -37,8 +37,9 @@ neovim: latest/neovim.download
 tbx: neovim
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
-	buildah run $${CONTAINER} sh -c 'dnf group info $(GROUPNAME)' || true
-	buildah run $${CONTAINER} sh -c 'dnf group install $(GROUPNAME)' || true
+	buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_C_DEV)' || true
+	buildah run $${CONTAINER} sh -c 'dnf group install $(GROUP_C_DEV)' || true
+	buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_OCAML)' || true
 	buildah run $${CONTAINER} sh -c 'dnf install cmake luajit' || true
 	buildah run $${CONTAINER} sh -c 'which make' || true
 	buildah run $${CONTAINER} sh -c 'which bash' || true

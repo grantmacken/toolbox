@@ -16,6 +16,42 @@ latest/luarocks.name:
 	mkdir -p $(dir $@)
 	wget -q -O - 'https://api.github.com/repos/luarocks/luarocks/tags' | jq  -r '.[0].name' | tee $@
 
+luarocks: latest/luarocks.name
+	echo '##[ $@ ]##'
+	CONTAINER=$$(buildah from cgr.dev/chainguard/wolfi-base:latest)
+	buildah config --workingdir /home/nonroot $${CONTAINER}
+	buildah run $${CONTAINER} sh -c 'mkdir /app && apk add \
+	build-base \
+	readline-dev \
+	autoconf \
+	luajit \
+	luajit-dev \
+	wget'
+	buildah run $${CONTAINER} sh -c 'lua -v'
+	echo '##[ ----------include----------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
+	echo '##[ -----------lib ------------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls /usr/lib' | grep lua
+	VERSION=$(shell cat $< | cut -c 2-)
+	echo "luarocks version: $${VERSION}"
+	URL=https://github.com/luarocks/luarocks/archive/refs/tags/v$${VERSION}.tar.gz
+	echo "luarocks URL: $${URL}"
+	buildah run $${CONTAINER} sh -c "wget -qO- $${URL} | tar xvz" &>/dev/null
+	buildah config --workingdir /home/nonroot/luarocks-$${VERSION} $${CONTAINER}
+	buildah run $${CONTAINER} sh -c './configure \
+		--with-lua=/usr/bin \
+		--with-lua-bin=/usr/bin \
+		--with-lua-lib=/usr/lib \
+		--with-lua-include=/usr/include/lua'
+	buildah run $${CONTAINER} sh -c 'make & make install'
+	buildah run $${CONTAINER} sh -c 'which luarocks'
+	# buildah run $${CONTAINER} sh -c 'luarocks'
+	buildah run $${CONTAINER} sh -c 'ls -alR /usr/local'
+	buildah commit --rm $${CONTAINER} $@ &>/dev/null
+	echo '-------------------------------'
+
+
+
 latest/neovim-nightly.json:
 	mkdir -p $(dir $@)
 	wget -q -O - 'https://api.github.com/repos/neovim/neovim/releases/tags/nightly' > $@
@@ -36,10 +72,9 @@ neovim: latest/neovim.download
 
 tbx: neovim latest/luarocks.name
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
-	buildah run $${CONTAINER} sh -c 'whoami'
 	# buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
 	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_C_DEV)' || true
-	buildah run $${CONTAINER} sh -c 'dnf -y group install $(GROUP_C_DEV)' || true
+	buildah run $${CONTAINER} sh -c 'dnf -y group install $(GROUP_C_DEV)' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'which make' || true
 	buildah run $${CONTAINER} sh -c 'which bash' || true
 	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_OCAML)' || true
@@ -47,15 +82,6 @@ tbx: neovim latest/luarocks.name
 	buildah run $${CONTAINER} /bin/bash -c 'ln -s /usr/bin/luajit /usr/bin/lua'
 	buildah run $${CONTAINER} sh -c 'which lua' || true
 	buildah run $${CONTAINER} sh -c 'lua -v'
-
-xxxxx:
-	echo '##[ ----------include----------------- ]##'
-	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
-	echo '##[ -----------lib ------------------- ]##'
-	buildah run $${CONTAINER} sh -c 'ls /usr/lib' | grep lua
-	echo ' - from: bldr neovim'
-	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
-	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
 	VERSION=$(shell cat latest/luarocks.name | cut -c 2-)
 	echo "luarocks version: $${VERSION}"
 	URL=https://github.com/luarocks/luarocks/archive/refs/tags/v$${VERSION}.tar.gz
@@ -68,12 +94,24 @@ xxxxx:
 		--with-lua-bin=/usr/bin \
 		--with-lua-lib=/usr/lib \
 		--with-lua-include=/usr/include/lua'
-	buildah run $${CONTAINER} sh -c 'make & make install'
 	buildah run $${CONTAINER} sh -c 'which luarocks'
+	buildah run $${CONTAINER} sh -c 'luarocks'
+	buildah run $${CONTAINER} sh -c 'ls -alR /usr/local'
 	buildah config --workingdir / $${CONTAINER}
 	buildah run $${CONTAINER} sh -c 'ls -al .'
 	buildah run $${CONTAINER} sh -c "rm -R /tmp/luarocks*"
 	buildah commit --rm $${CONTAINER} localhost/$@
+
+xxxxx:
+	echo '##[ ----------include----------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
+	echo '##[ -----------lib ------------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls /usr/lib' | grep lua
+	echo ' - from: bldr neovim'
+	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
+	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
+	buildah run $${CONTAINER} sh -c 'make & make install'
+
 
 xxx:
 	buildah run $${CONTAINER} sh -c 'rm /etc/rpm/macros.image-language-conf' &>/dev/null

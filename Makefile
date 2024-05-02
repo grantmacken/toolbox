@@ -7,7 +7,7 @@ MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --silent
 include .env
 
-default: neovim
+default: tbx
 
 latest/luarocks.name:
 	mkdir -p $(dir $@)
@@ -31,9 +31,17 @@ neovim: latest/neovim.download
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/local' || true
 	buildah commit --rm $${CONTAINER} $@
 
-
-fedora:
+tbx: neovim
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
+	buildah run $${CONTAINER} sh -c "dnf group list --hidden"
+	GROUPNAME='C Development Tools and Libraries'
+	buildah run $${CONTAINER} sh -c "dnf group info $${GROUPNAME}"
+	echo ' - from: bldr neovim'
+	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
+	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version'
+	buildah commit --rm $${CONTAINER} localhost/$@
+
+xxx:
 	buildah run $${CONTAINER} sh -c 'rm /etc/rpm/macros.image-language-conf' &>/dev/null
 	buildah run $${CONTAINER} sh -c "sed -i '/tsflags=nodocs/d' /etc/dnf/dnf.conf" &>/dev/null
 	buildah run $${CONTAINER} sh -c 'dnf -y upgrade && dnf -y swap coreutils-single coreutils-full && dnf -y swap glibc-minimal-langpack glibc-all-langpacks' &>/dev/null
@@ -42,6 +50,10 @@ fedora:
 	buildah run $${CONTAINER} sh -c 'dnf -y install ninja-build cmake gcc make unzip gettext' &>/dev/null ## for neovim
 	buildah run $${CONTAINER} sh -c 'dnf clean all' &>/dev/null
 	buildah commit --rm $${CONTAINER} localhost/$@:$(FEDORA_VER)
+ifdef GITHUB_ACTIONS
+	podman push ghcr.io/$(REPO_OWNER)/$@:$(VERSION)
+	podman push ghcr.io/$(REPO_OWNER)/$@:latest
+endif
 	podman images
 	echo '-----------------------------------------------'
 
@@ -160,7 +172,7 @@ wasmtime:
 #
 
 #buildah run $${CONTAINER} sh -c "rustup target add wasm32-wasi && rustup target add wasm32-wasi-preview1-threads && rustup target add wasm32-unknown-unknown"
-	
+
 golang:
 	echo 'Building $@ tooling'
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
@@ -176,7 +188,7 @@ golang:
 	## CHECK! To test if all packages requirements are met just run this in the container:
 	## https://distrobox.it/posts/distrobox_custom/
 
-tbx:
+xtbx:
 	CONTAINER=$$(buildah from localhost/fedora:$(FEDORA_VER))
 	buildah config \
 		--label com.github.containers.toolbox="true" \

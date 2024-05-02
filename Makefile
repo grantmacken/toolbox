@@ -28,6 +28,7 @@ luarocks: latest/luarocks.name
 	luajit-dev \
 	wget'
 	buildah run $${CONTAINER} sh -c 'lua -v'
+	buildah run $${CONTAINER} sh -c 'which lua'
 	echo '##[ ----------include----------------- ]##'
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
 	echo '##[ -----------lib ------------------- ]##'
@@ -45,7 +46,7 @@ luarocks: latest/luarocks.name
 		--with-lua-include=/usr/include/lua'
 	buildah run $${CONTAINER} sh -c 'make & make install'
 	buildah run $${CONTAINER} sh -c 'which luarocks'
-	# buildah run $${CONTAINER} sh -c 'luarocks'
+	buildah run $${CONTAINER} sh -c 'luarocks'
 	buildah run $${CONTAINER} sh -c 'ls -alR /usr/local'
 	buildah commit --rm $${CONTAINER} $@ &>/dev/null
 	echo '-------------------------------'
@@ -70,13 +71,24 @@ neovim: latest/neovim.download
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/local' || true
 	buildah commit --rm $${CONTAINER} $@
 
-tbx: neovim latest/luarocks.name
+tbx: neovim luarocks
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
 	# buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
 	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_C_DEV)' || true
 	buildah run $${CONTAINER} sh -c 'dnf -y group install $(GROUP_C_DEV)' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'which make' || true
 	buildah run $${CONTAINER} sh -c 'which bash' || true
+	echo ' - from: bldr neovim'
+	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
+	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
+	# echo ' - from: bldr luarocks'
+	# buildah add --chmod 755 --from localhost/luarocks $${CONTAINER} '/usr/local/' '/usr/local/'
+	# buildah add --chmod 755 --from localhost/luarocks $${CONTAINER} '/usr/include/lua' '/usr/include/'
+
+
+
+
+sssss:
 	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_OCAML)' || true
 	buildah run $${CONTAINER} sh -c 'dnf -y install luajit' || true
 	buildah run $${CONTAINER} /bin/bash -c 'ln -s /usr/bin/luajit /usr/bin/lua'
@@ -105,9 +117,6 @@ tbx: neovim latest/luarocks.name
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
 	echo '##[ -----------lib ------------------- ]##'
 	buildah run $${CONTAINER} sh -c 'ls /usr/lib' | grep lua
-	echo ' - from: bldr neovim'
-	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
-	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
 	echo ' - clean up'
 	buildah run $${CONTAINER} sh -c "rm -vR /tmp/*" || true
 

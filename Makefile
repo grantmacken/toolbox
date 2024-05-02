@@ -34,7 +34,7 @@ neovim: latest/neovim.download
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/local' || true
 	buildah commit --rm $${CONTAINER} $@
 
-tbx: neovim
+tbx: neovim latest/luarocks.name
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
 	buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_C_DEV)' || true
@@ -52,6 +52,23 @@ tbx: neovim
 	echo ' - from: bldr neovim'
 	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
 	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
+	VERSION=$(shell cat latest/luarocks.name | cut -c 2-)
+	echo "luarocks version: $${VERSION}"
+	URL=https://github.com/luarocks/luarocks/archive/refs/tags/v$${VERSION}.tar.gz
+	echo "luarocks URL: $${URL}"
+	buildah config --workingdir /tmp $${CONTAINER}
+	buildah run $${CONTAINER} sh -c "wget -qO- $${URL} | tar xvz" &>/dev/null
+	buildah config --workingdir /tmp/luarocks-$${VERSION} $${CONTAINER}
+	buildah run $${CONTAINER} sh -c './configure \
+		--with-lua=/usr/bin \
+		--with-lua-bin=/usr/bin \
+		--with-lua-lib=/usr/lib \
+		--with-lua-include=/usr/include/lua'
+	buildah run $${CONTAINER} sh -c 'make & make install'
+	buildah run $${CONTAINER} sh -c 'which luarocks'
+	buildah config --workingdir / $${CONTAINER}
+	buildah run $${CONTAINER} sh -c 'ls -al .'
+	buildah run $${CONTAINER} sh -c "rm -R /tmp/luarocks*"
 	buildah commit --rm $${CONTAINER} localhost/$@
 
 xxx:

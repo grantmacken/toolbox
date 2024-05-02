@@ -38,7 +38,16 @@ tbx: neovim
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
 	buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
 	buildah run $${CONTAINER} sh -c 'dnf group info $(GROUPNAME)' || true
+	buildah run $${CONTAINER} sh -c 'dnf group install $(GROUPNAME)' || true
+	buildah run $${CONTAINER} sh -c 'dnf install cmake luajit' || true
 	buildah run $${CONTAINER} sh -c 'which make' || true
+	buildah run $${CONTAINER} sh -c 'which bash' || true
+	buildah run $${CONTAINER} sh -c 'which lua' || true
+	buildah run $${CONTAINER} sh -c 'lua -v'
+	echo '##[ ----------include----------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
+	echo '##[ -----------lib ------------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls /usr/lib' | grep lua
 	echo ' - from: bldr neovim'
 	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
 	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true

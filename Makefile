@@ -26,13 +26,14 @@ luarocks: latest/luarocks.name
 	autoconf \
 	luajit \
 	luajit-dev \
-	wget'
+	wget' &>/dev/null
 	buildah run $${CONTAINER} sh -c 'lua -v'
 	buildah run $${CONTAINER} sh -c 'which lua'
+	buildah run $${CONTAINER} sh -c 'ls -al /usr/bin' | grep lua
 	echo '##[ ----------include----------------- ]##'
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
 	echo '##[ -----------lib ------------------- ]##'
-	buildah run $${CONTAINER} sh -c 'ls /usr/lib' | grep lua
+	buildah run $${CONTAINER} sh -c 'ls -alR /usr/lib' | grep lua
 	VERSION=$(shell cat $< | cut -c 2-)
 	echo "luarocks version: $${VERSION}"
 	URL=https://github.com/luarocks/luarocks/archive/refs/tags/v$${VERSION}.tar.gz

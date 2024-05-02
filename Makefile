@@ -40,10 +40,11 @@ tbx: neovim latest/luarocks.name
 	# buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
 	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_C_DEV)' || true
 	buildah run $${CONTAINER} sh -c 'dnf -y group install $(GROUP_C_DEV)' || true
-	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_OCAML)' || true
-	buildah run $${CONTAINER} sh -c 'dnf -y install luajit' || true
 	buildah run $${CONTAINER} sh -c 'which make' || true
 	buildah run $${CONTAINER} sh -c 'which bash' || true
+	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_OCAML)' || true
+	buildah run $${CONTAINER} sh -c 'dnf -y install luajit' || true
+	buildah run $${CONTAINER} /bin/bash -c 'ln -s /usr/bin/luajit /usr/bin/lua'
 	buildah run $${CONTAINER} sh -c 'which lua' || true
 	buildah run $${CONTAINER} sh -c 'lua -v'
 	echo '##[ ----------include----------------- ]##'

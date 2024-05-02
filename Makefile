@@ -94,15 +94,11 @@ tbx: neovim latest/luarocks.name
 		--with-lua-bin=/usr/bin \
 		--with-lua-lib=/usr/lib \
 		--with-lua-include=/usr/include/lua'
-	buildah run $${CONTAINER} sh -c 'which luarocks'
+	buildah run $${CONTAINER} sh -c 'make & make install'
+	# buildah run $${CONTAINER} sh -c 'which luarocks'
 	buildah run $${CONTAINER} sh -c 'luarocks'
 	buildah run $${CONTAINER} sh -c 'ls -alR /usr/local'
 	buildah config --workingdir / $${CONTAINER}
-	buildah run $${CONTAINER} sh -c 'ls -al .'
-	buildah run $${CONTAINER} sh -c "rm -R /tmp/luarocks*"
-	buildah commit --rm $${CONTAINER} localhost/$@
-
-xxxxx:
 	echo '##[ ----------include----------------- ]##'
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
 	echo '##[ -----------lib ------------------- ]##'
@@ -110,8 +106,8 @@ xxxxx:
 	echo ' - from: bldr neovim'
 	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
 	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
-	buildah run $${CONTAINER} sh -c 'make & make install'
-
+	echo 'Clean up'
+	buildah run $${CONTAINER} sh -c "rm -vR /tmp/*" || true
 
 xxx:
 	buildah run $${CONTAINER} sh -c 'rm /etc/rpm/macros.image-language-conf' &>/dev/null

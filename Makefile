@@ -36,9 +36,10 @@ neovim: latest/neovim.download
 
 tbx: neovim latest/luarocks.name
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
+	buildah run $${CONTAINER} sh -c 'whoami'
 	# buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
 	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_C_DEV)' || true
-	buildah run $${CONTAINER} sh -c 'dnf group install $(GROUP_C_DEV)' || true
+	buildah run $${CONTAINER} sh -c 'sudo dnf group install $(GROUP_C_DEV)' || true
 	# buildah run $${CONTAINER} sh -c 'dnf group info $(GROUP_OCAML)' || true
 	# buildah run $${CONTAINER} sh -c 'dnf install cmake luajit' || true
 	buildah run $${CONTAINER} sh -c 'which make' || true

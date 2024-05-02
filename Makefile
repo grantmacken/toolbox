@@ -89,6 +89,7 @@ tbx: neovim latest/luarocks.name
 	buildah config --workingdir /tmp $${CONTAINER}
 	buildah run $${CONTAINER} sh -c "wget -qO- $${URL} | tar xvz" &>/dev/null
 	buildah config --workingdir /tmp/luarocks-$${VERSION} $${CONTAINER}
+	buildah run $${CONTAINER} sh -c 'ls -al .'
 	buildah run $${CONTAINER} sh -c './configure \
 		--with-lua=/usr/bin \
 		--with-lua-bin=/usr/bin \
@@ -98,6 +99,7 @@ tbx: neovim latest/luarocks.name
 	# buildah run $${CONTAINER} sh -c 'which luarocks'
 	buildah run $${CONTAINER} sh -c 'luarocks'
 	buildah run $${CONTAINER} sh -c 'ls -alR /usr/local'
+	echo ' - reset working dir'
 	buildah config --workingdir / $${CONTAINER}
 	echo '##[ ----------include----------------- ]##'
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
@@ -106,7 +108,7 @@ tbx: neovim latest/luarocks.name
 	echo ' - from: bldr neovim'
 	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
 	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
-	echo 'Clean up'
+	echo ' - clean up'
 	buildah run $${CONTAINER} sh -c "rm -vR /tmp/*" || true
 
 xxx:

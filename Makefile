@@ -7,6 +7,9 @@ MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --silent
 include .env
 
+GROUPNAME := "C Development Tools and Libraries"
+
+
 default: tbx
 
 latest/luarocks.name:
@@ -32,13 +35,13 @@ neovim: latest/neovim.download
 	buildah commit --rm $${CONTAINER} $@
 
 tbx: neovim
-	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora:$(FEDORA_VER))
-	buildah run $${CONTAINER} sh -c "dnf group list --hidden"
-	GROUPNAME='C Development Tools and Libraries'
-	buildah run $${CONTAINER} sh -c "dnf group info $${GROUPNAME}"
+	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
+	buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
+	buildah run $${CONTAINER} sh -c 'dnf group info $(GROUPNAME)' || true
+	buildah run $${CONTAINER} sh -c 'which make' || true
 	echo ' - from: bldr neovim'
 	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
-	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version'
+	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
 	buildah commit --rm $${CONTAINER} localhost/$@
 
 xxx:

@@ -72,6 +72,23 @@ neovim: latest/neovim.download
 	buildah run $${CONTAINER} sh -c 'ls -al /usr/local' || true
 	buildah commit --rm $${CONTAINER} $@
 
+bldr-rust: ## a ephemeral localhost container which builds rust executables
+	echo '##[ $@ ]##'
+	CONTAINER=$$(buildah from cgr.dev/chainguard/rust:latest)
+	buildah run $${CONTAINER} rustc --version
+	buildah run $${CONTAINER} cargo --version
+	buildah run $${CONTAINER} cargo install cargo-binstall &>/dev/null
+	# only install stuff not in  wolfi apk registry
+	buildah run $${CONTAINER} /home/nonroot/.cargo/bin/cargo-binstall --no-confirm --no-symlinks \
+		stylua \
+		silicon \
+		tree-sitter-cli &>/dev/null
+	buildah run $${CONTAINER} rm /home/nonroot/.cargo/bin/cargo-binstall
+	buildah run $${CONTAINER} ls /home/nonroot/.cargo/bin/
+	buildah commit --rm $${CONTAINER} $@
+	echo '##[ ------------------------------- ]##'
+
+
 tbx: neovim luarocks
 	CONTAINER=$$(buildah from registry.fedoraproject.org/fedora-toolbox:$(FEDORA_VER))
 	# buildah run $${CONTAINER} sh -c 'dnf group list --hidden'
@@ -82,10 +99,21 @@ tbx: neovim luarocks
 	echo ' - from: bldr neovim'
 	buildah add --from localhost/neovim $${CONTAINER} '/usr/local/nvim-linux64' '/usr/local/'
 	buildah run $${CONTAINER} sh -c 'which nvim && nvim --version' || true
-	# echo ' - from: bldr luarocks'
-	# buildah add --chmod 755 --from localhost/luarocks $${CONTAINER} '/usr/local/' '/usr/local/'
-	# buildah add --chmod 755 --from localhost/luarocks $${CONTAINER} '/usr/include/lua' '/usr/include/'
-
+	echo ' - from: bldr luarocks'
+	buildah add --chmod 755 --from localhost/luarocks $${CONTAINER} '/usr/local/' '/usr/local/'
+	buildah add --chmod 755 --from localhost/luarocks $${CONTAINER} '/usr/include/lua' '/usr/include/'
+	buildah add --chmod 755 --from localhost/luarocks $${CONTAINER} '/usr/bin/lua*' '/usr/bin/'
+	buildah run $${CONTAINER} sh -c 'lua -v'
+	buildah run $${CONTAINER} sh -c 'which lua'
+	echo '##[ ----------bin----------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls -al /usr/bin' | grep lua
+	echo '##[ ----------include----------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls -al /usr/include' | grep lua
+	echo '##[ -----------lib ------------------- ]##'
+	buildah run $${CONTAINER} sh -c 'ls -alR /usr/lib' | grep lua
+	buildah run $${CONTAINER} sh -c 'which luarocks'
+	buildah run $${CONTAINER} sh -c 'luarocks'
+	buildah run $${CONTAINER} sh -c 'ls -alR /usr/local'
 
 
 
